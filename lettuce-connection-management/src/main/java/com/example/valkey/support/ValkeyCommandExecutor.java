@@ -24,6 +24,8 @@ public class ValkeyCommandExecutor {
 
   private static final String TOO_MANY_REDIRECTIONS = "Too many cluster redirections";
 
+  private static final int MAX_CAUSE_DEPTH = 10;
+
   private final ValkeyRetryOptions retryOptions;
 
   public ValkeyCommandExecutor(ValkeyRetryOptions retryOptions) {
@@ -96,14 +98,32 @@ public class ValkeyCommandExecutor {
                         dataSourceName,
                         signal.totalRetries() + 1,
                         retryOptions.getMaxAttempts() - 1,
-                        signal.failure().getMessage()));
+                        signal.failure().getMessage()))
+            // 重试耗尽时保留最后一次原始异常，与同步路径的 cause 语义一致
+            .onRetryExhaustedThrow((spec, signal) -> signal.failure());
     return Mono.defer(action)
         .retryWhen(retrySpec)
         .onErrorMap(error -> translate(dataSourceName, error));
   }
 
   private static boolean isConnectionFailure(Throwable error) {
-    return error instanceof RedisConnectionException;
+    return findCause(error, RedisConnectionException.class) != null;
+  }
+
+  /** 沿 cause 链查找指定类型的异常（响应式链路中异常可能被包装）。 */
+  private static <T extends Throwable> T findCause(Throwable error, Class<T> type) {
+    Throwable current = error;
+    for (int depth = 0; current != null && depth < MAX_CAUSE_DEPTH; depth++) {
+      if (type.isInstance(current)) {
+        return type.cast(current);
+      }
+      Throwable cause = current.getCause();
+      if (cause == current) {
+        break;
+      }
+      current = cause;
+    }
+    return null;
   }
 
   private ValkeyAccessException translate(String dataSourceName, Throwable error) {
@@ -121,13 +141,22 @@ public class ValkeyCommandExecutor {
 
   /** 集群重定向达到上限时输出监视日志，便于与拓扑刷新日志相互印证。 */
   static void monitorRedirections(String dataSourceName, Throwable error) {
-    String message = error.getMessage();
-    if (message != null && message.contains(TOO_MANY_REDIRECTIONS)) {
-      LOGGER.warn(
-          "[ClusterMonitor] Data source [{}] reached the maximum number of cluster redirections,"
-              + " a topology refresh will follow: {}",
-          dataSourceName,
-          message);
+    Throwable current = error;
+    for (int depth = 0; current != null && depth < MAX_CAUSE_DEPTH; depth++) {
+      String message = current.getMessage();
+      if (message != null && message.contains(TOO_MANY_REDIRECTIONS)) {
+        LOGGER.warn(
+            "[ClusterMonitor] Data source [{}] reached the maximum number of cluster"
+                + " redirections, a topology refresh will follow: {}",
+            dataSourceName,
+            message);
+        return;
+      }
+      Throwable cause = current.getCause();
+      if (cause == current) {
+        return;
+      }
+      current = cause;
     }
   }
 
