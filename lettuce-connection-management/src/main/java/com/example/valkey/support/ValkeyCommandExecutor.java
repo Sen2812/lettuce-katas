@@ -144,10 +144,10 @@ public class ValkeyCommandExecutor {
     Throwable current = error;
     for (int depth = 0; current != null && depth < MAX_CAUSE_DEPTH; depth++) {
       String message = current.getMessage();
-      if (message != null && message.contains(TOO_MANY_REDIRECTIONS)) {
+      if (message != null && isRedirectionLimitFailure(message)) {
         LOGGER.warn(
-            "[ClusterMonitor] Data source [{}] reached the maximum number of cluster"
-                + " redirections, a topology refresh will follow: {}",
+            "[ClusterMonitor] Data source [{}] could not follow a cluster redirection, the"
+                + " redirection limit was reached; topology refresh will follow: {}",
             dataSourceName,
             message);
         return;
@@ -158,6 +158,18 @@ public class ValkeyCommandExecutor {
       }
       current = cause;
     }
+  }
+
+  /**
+   * 判断异常消息是否表示重定向处理失败。
+   *
+   * <p>Lettuce 成功跟随重定向时不会把 MOVED/ASK 暴露给调用方；只有达到 max-redirects 上限时才会
+   * 抛出携带原始 MOVED/ASK 响应内容的异常（部分版本使用固定文案 “Too many cluster redirections”）。
+   */
+  private static boolean isRedirectionLimitFailure(String message) {
+    return message.contains(TOO_MANY_REDIRECTIONS)
+        || message.startsWith("MOVED ")
+        || message.startsWith("ASK ");
   }
 
   private void sleep() {

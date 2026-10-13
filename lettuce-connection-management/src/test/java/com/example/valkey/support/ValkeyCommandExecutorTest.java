@@ -4,11 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.valkey.ValkeyAccessException;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisConnectionException;
+import io.lettuce.core.RedisException;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 class ValkeyCommandExecutorTest {
@@ -105,6 +111,38 @@ class ValkeyCommandExecutorTest {
         .hasCauseInstanceOf(IllegalStateException.class);
 
     assertThat(attempts.get()).isEqualTo(1);
+  }
+
+  @Test
+  void shouldLogClusterMonitorWarningWhenRedirectionLimitIsReached() {
+    Logger logger = (Logger) LoggerFactory.getLogger(ValkeyCommandExecutor.class);
+    ListAppender<ILoggingEvent> appender = new ListAppender<>();
+    appender.start();
+    logger.addAppender(appender);
+    try {
+      RedisException moved = new RedisException("MOVED 15908 127.0.0.1:7006");
+
+      assertThatThrownBy(
+              () ->
+                  executor.execute(
+                      "ds-1",
+                      () -> {
+                        throw moved;
+                      }))
+          .isInstanceOf(ValkeyAccessException.class)
+          .hasCause(moved);
+
+      assertThat(appender.list)
+          .anySatisfy(
+              event -> {
+                assertThat(event.getLevel()).isEqualTo(Level.WARN);
+                assertThat(event.getFormattedMessage())
+                    .contains("[ClusterMonitor]")
+                    .contains("ds-1");
+              });
+    } finally {
+      logger.detachAppender(appender);
+    }
   }
 
   @Test

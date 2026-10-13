@@ -85,6 +85,7 @@ public class RedisConnectionTest {
         .withHost("localhost")
         .withPort(6379)
         .withTimeout(Duration.of(10, ChronoUnit.SECONDS))
+        .withAuthentication("default", "change_me")
         .build();
 
     RedisClient redisClient = RedisClient.create(redisUri);
