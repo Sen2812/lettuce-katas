@@ -23,6 +23,7 @@ public class DefaultValkeyClusterConnection implements ValkeyClusterConnection {
   private final String dataSourceName;
   private final RedisClusterClient client;
   private final StatefulRedisClusterConnection<String, String> connection;
+  private final ValkeyCommandExecutor executor;
   private final ValkeyOperations operations;
 
   public DefaultValkeyClusterConnection(String dataSourceName, RedisClusterClient client,
@@ -31,6 +32,7 @@ public class DefaultValkeyClusterConnection implements ValkeyClusterConnection {
     this.dataSourceName = dataSourceName;
     this.client = client;
     this.connection = connection;
+    this.executor = executor;
     this.operations = new DefaultValkeyOperations(dataSourceName, () -> connection.sync(),
         () -> connection.reactive(), serializer, executor);
   }
@@ -43,6 +45,11 @@ public class DefaultValkeyClusterConnection implements ValkeyClusterConnection {
   @Override
   public boolean isOpen() {
     return connection.isOpen();
+  }
+
+  @Override
+  public void ping() {
+    executor.executeVoid(dataSourceName, () -> connection.sync().ping());
   }
 
   @Override

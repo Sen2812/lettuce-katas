@@ -5,6 +5,7 @@ import com.example.valkey.ValkeyConnectionFactory;
 import com.example.valkey.ValkeyConnectionManager;
 import com.example.valkey.factory.DefaultValkeyClusterConnectionFactory;
 import com.example.valkey.factory.DefaultValkeyConnectionFactory;
+import com.example.valkey.health.ValkeyHealthIndicator;
 import com.example.valkey.manager.DefaultValkeyConnectionManager;
 import com.example.valkey.serializer.JacksonValkeySerializer;
 import com.example.valkey.serializer.ValkeySerializer;
@@ -13,8 +14,10 @@ import com.example.valkey.support.ValkeyRetryOptions;
 import com.example.valkey.template.ValkeyTemplateFactory;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -81,5 +84,17 @@ public class ValkeyAutoConfiguration {
   public ValkeyTemplateFactory valkeyTemplateFactory(
       ValkeyConnectionManager valkeyConnectionManager) {
     return new ValkeyTemplateFactory(valkeyConnectionManager);
+  }
+
+  /** 应用引入 Actuator（classpath 中存在 {@code HealthIndicator}）时注册 valkey 健康检查。 */
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnClass(HealthIndicator.class)
+  static class ValkeyHealthConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(name = "valkeyHealthIndicator")
+    HealthIndicator valkeyHealthIndicator(ValkeyConnectionManager valkeyConnectionManager) {
+      return new ValkeyHealthIndicator(valkeyConnectionManager);
+    }
   }
 }

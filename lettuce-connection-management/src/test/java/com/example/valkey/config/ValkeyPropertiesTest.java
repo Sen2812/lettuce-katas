@@ -25,6 +25,11 @@ class ValkeyPropertiesTest {
     source.put("valkey.datasources.ds1.username", "default");
     source.put("valkey.datasources.ds1.password", "change_me");
     source.put("valkey.datasources.ds1.timeout", "10s");
+    source.put("valkey.datasources.ds1.connect-timeout", "3s");
+    source.put("valkey.datasources.ds1.command-timeout", "7s");
+    source.put("valkey.datasources.ds1.ssl", "true");
+    source.put("valkey.datasources.ds1.ssl-trust-certificate", "/etc/valkey/ca.crt");
+    source.put("valkey.datasources.ds1.client-name", "checkout-service");
     source.put("valkey.datasources.ds1.max-redirects", "7");
     source.put("valkey.datasources.ds1.topology-refresh-period", "45s");
     source.put("valkey.datasources.ds2.mode", "standalone");
@@ -44,6 +49,14 @@ class ValkeyPropertiesTest {
     assertThat(cluster.getUsername()).isEqualTo("default");
     assertThat(cluster.getPassword()).isEqualTo("change_me");
     assertThat(cluster.getTimeout()).isEqualTo(Duration.ofSeconds(10));
+    assertThat(cluster.getConnectTimeout()).isEqualTo(Duration.ofSeconds(3));
+    assertThat(cluster.getCommandTimeout()).isEqualTo(Duration.ofSeconds(7));
+    assertThat(cluster.resolveConnectTimeout()).isEqualTo(Duration.ofSeconds(3));
+    assertThat(cluster.resolveCommandTimeout()).isEqualTo(Duration.ofSeconds(7));
+    assertThat(cluster.isSsl()).isTrue();
+    assertThat(cluster.getSslTrustCertificate()).isEqualTo("/etc/valkey/ca.crt");
+    assertThat(cluster.getClientName()).isEqualTo("checkout-service");
+    assertThat(cluster.resolveClientName("ds1")).isEqualTo("checkout-service");
     assertThat(cluster.getMaxRedirects()).isEqualTo(7);
     assertThat(cluster.getTopologyRefreshPeriod()).isEqualTo(Duration.ofSeconds(45));
 
@@ -51,6 +64,10 @@ class ValkeyPropertiesTest {
     assertThat(standalone.getMode()).isEqualTo(ValkeyMode.STANDALONE);
     assertThat(standalone.getPort()).isEqualTo(6379);
     assertThat(standalone.getTimeout()).isEqualTo(Duration.ofSeconds(10));
+    assertThat(standalone.resolveConnectTimeout()).isEqualTo(Duration.ofSeconds(10));
+    assertThat(standalone.resolveCommandTimeout()).isEqualTo(Duration.ofSeconds(10));
+    assertThat(standalone.resolveClientName("ds2")).isEqualTo("ds2");
+    assertThat(standalone.isSsl()).isFalse();
   }
 
   @Test

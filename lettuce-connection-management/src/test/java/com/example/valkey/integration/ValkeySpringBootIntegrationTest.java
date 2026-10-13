@@ -11,6 +11,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
@@ -26,9 +29,24 @@ class ValkeySpringBootIntegrationTest {
   private ValkeyConnectionManager connectionManager;
   @Autowired
   private ValkeyTemplateFactory templateFactory;
+  @Autowired
+  private HealthIndicator valkeyHealthIndicator;
 
   private static String uniqueKey(String prefix) {
     return "it:spring:" + prefix + ":" + UUID.randomUUID();
+  }
+
+  @Test
+  void healthIndicatorShouldReportUpForAllDataSources() {
+    Assumptions.assumeTrue(IntegrationTestSupport.reachable("127.0.0.1", 6379),
+        "standalone valkey is not reachable, test skipped");
+    Assumptions.assumeTrue(IntegrationTestSupport.reachable("127.0.0.1", 7001),
+        "cluster valkey is not reachable, test skipped");
+
+    Health health = valkeyHealthIndicator.health();
+
+    assertThat(health.getStatus()).isEqualTo(Status.UP);
+    assertThat(health.getDetails()).containsKeys("datasource-01", "datasource-02");
   }
 
   @Test

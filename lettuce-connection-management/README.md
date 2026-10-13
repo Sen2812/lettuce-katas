@@ -14,13 +14,18 @@
 | 能力 | 说明 |
 | --- | --- |
 | 多数据源 | 配置中以 `valkey.datasources.<name>` 定义任意个数据源，支持 `standalone` 与 `cluster` 两种模式 |
-| 有限命令集 | 仅封装 `SET`、`GET`、`DEL` 三个命令，同步与响应式两套操作集合 |
+| 有限命令集 | 仅封装 `SET`、`GET`、`DEL` 三个命令（另有连接级 `PING`），同步与响应式两套操作集合 |
 | 连接复用 | 同一数据源名称在管理器生命周期内始终复用同一个连接实例 |
 | 序列化 | 键与值统一以 String 传递，固定由 Jackson 3 序列化为 UTF-8 字符串 |
 | 异常模型 | 操作异常、命令异常、连接创建异常统一转换为 `ValkeyAccessException`，保留原始异常 |
 | 有限重试 | 仅对“命令未发送到服务端”的连接类异常重试（默认 3 次、200ms 退避），次数可配置 |
 | 集群自动更新 | 周期性拓扑刷新 + 全部自适应刷新触发器（MOVED / ASK / 持续重连 / 未覆盖槽位 / 未知节点） |
 | 集群监视 | 拓扑刷新与重连由日志监视；重定向达到上限时输出 `[ClusterMonitor]` 警告日志 |
+| TLS 支持 | `ssl` 开关 + `ssl-trust-certificate` 私有 CA 信任；未信任的证书会被拒绝（校验不可绕过） |
+| 超时治理 | `timeout` 兜底 + `connect-timeout` / `command-timeout` 分别覆盖连接与命令阶段 |
+| 客户端标识 | `client-name` 标识连接来源（默认数据源名），便于服务端 `CLIENT LIST` 运维排查 |
+| 健康检查 | 引入 Actuator 时自动注册 `valkeyHealthIndicator`（逐数据源 PING） |
+| 优雅关闭 | 上下文销毁时先关闭数据源连接、再释放共享 Lettuce 资源（有测试覆盖） |
 
 ---
 
@@ -38,6 +43,8 @@
 - `close()` 同时关闭底层 `StatefulRedisConnection` 与该数据源独占的 `RedisClient`；共享的
   `ClientResources` 由框架统一释放，不在此处关闭。
 - `isOpen()` 反映底层连接的实时状态；连接关闭后调用操作集合会抛出 `ValkeyAccessException`。
+- `ping()` 经过与命令一致的执行器（有限重试 + 异常转换），失败时抛出
+  `ValkeyAccessException`；成功即代表服务端真实可交互（健康检查依赖此语义）。
 
 #### `ValkeyClusterConnection`（继承 `ValkeyConnection`）
 
@@ -69,9 +76,22 @@
 
 - 所有连接使用 `StringCodec.UTF8` 编解码，保证写入链路上的字节与 UTF-8 一致。
 - 每次创建尝试都在 `ValkeyCommandExecutor` 内执行，因此连接类失败会自动重试有限次。
-- 单机模式必须设置 `autoReconnect(true)`、连接超时与命令超时；集群模式还必须设置
-  `maxRedirects`（默认 5）与拓扑刷新策略。
+- 自动重连、连接/命令超时、TLS 与集群拓扑刷新策略统一由 `ValkeyClientOptions` 构造，
+  两种模式行为一致；集群模式必须设置 `maxRedirects`（默认 5）与拓扑刷新策略。
 - 共享 `ClientResources` 由构造注入，同一个进程内所有数据源共用同一份事件循环资源。
+
+#### `ValkeyClientOptions`（工厂包内工具）
+
+职责：由数据源配置集中构造 `ClientOptions` / `ClusterClientOptions`。
+
+强约束：
+
+- `autoReconnect(true)` 固定开启，断线由 Lettuce 后台自动重连。
+- 连接超时与命令超时分别取 `connect-timeout` / `command-timeout`，未配置时回退到 `timeout`。
+- `ssl=true` 时构造 `SslOptions`：配置了 `ssl-trust-certificate` 时以其为信任锚，
+  否则使用系统信任库；证书文件不存在时**快速失败**（抛 `ValkeyAccessException`），
+  不允许带着无效证书配置启动。
+- `ssl=false` 时不设置任何 SSL 选项（连接保持明文协议）。
 
 #### `ValkeyConnectionManager` / `DefaultValkeyConnectionManager`
 
@@ -188,6 +208,10 @@
   Lettuce 自动发现。
 - `password` / `username` 可选；未配置时以无认证方式连接，配置了密码而未配置用户名时使用
   默认用户。
+- 超时三级语义：`timeout` 为兜底默认；`connect-timeout` / `command-timeout` 分别覆盖连接
+  建立与命令响应阶段（`resolveConnectTimeout()` / `resolveCommandTimeout()` 负责解析）。
+- `ssl-trust-certificate` 仅在 `ssl=true` 时生效。
+- `client-name` 未配置时使用数据源名称（`resolveClientName(name)`）。
 - `max-redirects` 与 `topology-refresh-period` 仅集群模式生效。
 
 #### `ValkeyProperties`
@@ -208,6 +232,18 @@
 - `ClientResources` 为进程内单例，销毁时调用 `shutdown()`。
 - `ValkeyConnectionManager` 销毁时调用 `close()`，统一释放所有数据源连接。
 - 序列化器固定注册 Jackson 实现；不提供第二个内建实现。
+- 仅当 classpath 存在 Actuator 的 `HealthIndicator` 时注册 `valkeyHealthIndicator`；
+  已存在同名 Bean 时跳过。
+
+#### `ValkeyHealthIndicator`（health 包，Actuator 可选集成）
+
+职责：对每个已配置数据源执行 `PING`，聚合为 Actuator 健康状态。
+
+强约束：
+
+- 所有数据源 PING 成功为 `UP`，任一失败为 `DOWN`，details 中逐数据源标注状态与失败原因。
+- 检查复用连接管理器中的连接（懒创建），不额外维护连接池；不会主动关闭连接。
+- `PING` 经过统一执行器（有限重试 + 异常转换），健康检查的超时预算据此评估。
 
 ---
 
@@ -221,6 +257,7 @@
 | --- | --- |
 | `ValkeyOperations getOperations()` | 暴露该连接上的操作集合（值操作与 key 操作） |
 | `boolean isOpen()` | 底层连接当前是否打开 |
+| `void ping()` | 向服务端发送 PING；失败抛出 `ValkeyAccessException` |
 | `String getDataSourceName()` | 该连接绑定的数据源名称 |
 | `void close()` | 关闭连接并释放该连接独占的客户端资源 |
 
@@ -353,9 +390,21 @@
 | `port` | `int` | `6379` | 端口；集群模式为种子端口 |
 | `username` | `String` | 空 | ACL 用户名 |
 | `password` | `String` | 空 | 认证密码 |
-| `timeout` | `Duration` | `10s` | 连接超时与命令超时 |
+| `timeout` | `Duration` | `10s` | 兜底超时（连接与命令共用默认值） |
+| `connect-timeout` | `Duration` | 空（回退 `timeout`） | 连接建立超时 |
+| `command-timeout` | `Duration` | 空（回退 `timeout`） | 命令响应超时 |
+| `ssl` | `boolean` | `false` | 是否启用 TLS |
+| `ssl-trust-certificate` | `String` | 空 | 私有 CA / 自签证书（PEM 路径）；缺省用系统信任库 |
+| `client-name` | `String` | 空（默认数据源名） | 客户端标识（`CLIENT LIST` 可见） |
 | `max-redirects` | `int` | `5` | 集群最大重定向次数 |
 | `topology-refresh-period` | `Duration` | `30s` | 集群周期性拓扑刷新间隔 |
+
+**`ValkeyHealthIndicator`**（`com.example.valkey.health`）
+
+| 方法签名 | 功能说明 |
+| --- | --- |
+| `ValkeyHealthIndicator(ValkeyConnectionManager)` | 使用连接管理器构造 |
+| `Health health()` | 逐数据源 PING 并聚合状态（Actuator 调用） |
 
 **`ValkeyAutoConfiguration`** 注册的 Bean
 
@@ -368,6 +417,7 @@
 | `valkeyClusterConnectionFactory` | `ValkeyClusterConnectionFactory` | 集群连接工厂 |
 | `valkeyConnectionManager` | `ValkeyConnectionManager` | 连接管理器（destroy：close） |
 | `valkeyTemplateFactory` | `ValkeyTemplateFactory` | 模板工厂 |
+| `valkeyHealthIndicator` | `HealthIndicator` | 健康检查（仅当 classpath 存在 Actuator 的 `HealthIndicator`） |
 
 ---
 
@@ -389,16 +439,29 @@ valkey:
             port: 6379
             password: change_me
             timeout: 10s
+            # 生产建议：连接与命令超时可按阶段覆盖，客户端名称便于运维排查
+            connect-timeout: 3s
+            command-timeout: 5s
+            client-name: order-service
         # 集群模式数据源；host/port 为拓扑发现的种子节点，其余节点由 Lettuce 自动发现
         datasource-02:
             mode: cluster
-            host: localhost
+            host: valkey-cluster.internal
             port: 7001
-            password: change_me
+            password: ${VALKEY_CLUSTER_PASSWORD}
             timeout: 10s
             max-redirects: 5
             topology-refresh-period: 30s
+            # TLS 数据源示例：启用 TLS 并信任私有 CA
+            ssl: true
+            ssl-trust-certificate: /etc/ssl/certs/internal-ca.crt
 ```
+
+生产提示：
+
+- 密码等敏感项建议用环境变量占位符注入（如 `${VALKEY_CLUSTER_PASSWORD}`），不要在配置文件中
+  明文保存；Spring Boot 原生支持该写法。
+- `ssl-trust-certificate` 指向 PEM 格式的 CA 证书文件；路径无效时框架会快速失败而不是静默降级。
 
 使用示例：
 
@@ -545,19 +608,86 @@ limit was reached; topology refresh will follow: MOVED 11733 127.0.0.1:7003
 
 ---
 
-## 7. 测试指南
+## 7. 生产就绪性论证
 
-### 7.1 测试清单
+本节从生产部署视角逐项论证功能封装：**已实现的**给出动机与验证方式；**有意不做的**给出理由与
+扩展点。
+
+### 7.1 本轮新增的生产封装
+
+| 能力 | 解决的生产问题 | 实现要点 | 验证方式 |
+| --- | --- | --- | --- |
+| TLS / SSL | 云托管 valkey 普遍强制加密传输，防窃听与中间人 | `ssl` 开关；`ssl-trust-certificate` 信任私有 CA；配置无效时快速失败 | `ValkeyTlsIntegrationTest`：真实 TLS 端到端读写、未信任自签证书被拒绝 |
+| 超时分级 | 连接建立与命令响应是两段独立等待，需要分别治理 | `connect-timeout` / `command-timeout` 独立覆盖，未配置回退 `timeout` | `ValkeyClientOptionsTest`、`ValkeyUrisTest`、`ValkeyPropertiesTest` |
+| 客户端名称 | 服务端 `CLIENT LIST`、慢查询与连接排查需要来源标识 | `client-name`（默认取数据源名）写入 `RedisURI` | `ValkeyUrisTest` |
+| 健康检查 | K8s readiness/liveness 与网关摘流依赖健康端点 | 引入 Actuator 时自动注册 `valkeyHealthIndicator`，逐数据源 PING | `ValkeyHealthIndicatorTest`、`ValkeySpringBootIntegrationTest` |
+| 优雅关闭 | 进程退出时连接与共享资源需有序释放，避免泄漏与关闭期报错 | Manager 先关闭各数据源连接，`ClientResources` 最后释放 | `ValkeyGracefulShutdownTest` |
+| 配置快速失败 | 坏配置应在启动或首次使用时立即暴露，而非运行期随机失败 | 信任证书文件缺失时构造期抛 `ValkeyAccessException` | `ValkeyClientOptionsTest` |
+| 连接级 PING | 生命周期探针需要“服务端真实可交互”的信号 | `ValkeyConnection#ping()` 与命令走同一执行器（有限重试 + 异常转换） | 单机/集群/TLS 集成测试 |
+
+### 7.2 有意不做的封装（附论证）
+
+**1. 连接池（commons-pool2）**
+
+- 结论：不提供池化封装。
+- 理由：Lettuce 的 `StatefulRedisConnection` 线程安全且支持命令 pipelining；框架命令集
+  （`SET` / `GET` / `DEL`，皆为非阻塞短命令）在单连接上可安全并发执行。池化只对阻塞命令
+  （`BLPOP` 等）与需要独立会话的场景（`MULTI/EXEC`、订阅）有实际意义。
+- 扩展点：需要时可针对特定数据源实现自定义 `ValkeyConnectionFactory`；`commons-pool2` 已在
+  依赖中（`RedisConnectionTest` 展示了 `ConnectionPoolSupport` 的用法）。
+
+**2. 从节点读（ReadFrom / 读写分离）**
+
+- 结论：默认主节点读写，不提供配置项。
+- 理由：读写分离本质是一致性决策——复制是异步的，从节点读会引入复制延迟窗口；框架定位为
+  “行为可预期的访问层”，把一致性取舍显式留给应用。
+- 扩展点：`StatefulRedisClusterConnection#setReadFrom(ReadFrom.REPLICA)` 可通过自定义集群
+  工厂接入。
+
+**3. 更复杂的重试策略（指数退避、熔断、重试预算）**
+
+- 结论：保持“固定次数的连接类异常重试”。
+- 理由：框架重试的目标仅是跨过瞬态连接失败（毫秒级窗口）；指数退避与熔断属于服务治理层
+  （如 Resilience4j）职责，多层重试叠加会放大故障风暴。
+- 扩展点：`ValkeyRetryOptions` 可调整尝试次数与固定退避；更复杂策略可由上层包装模板实现。
+
+**4. 指标导出（Micrometer / Prometheus 的埋点与命名约定）**
+
+- 结论：不内置指标导出管道。
+- 理由：指标后端选型与命名规范因团队而异。Lettuce 支持命令延迟收集，可通过自定义
+  `ClientResources` 挂接事件监听完成导出。
+- 扩展点：所有 Bean 带 `@ConditionalOnMissingBean`，应用可覆盖 `valkeyClientResources` 为
+  启用命令延迟收集的自定义实例，再按团队规范导出。
+
+### 7.3 生产部署检查清单
+
+- 密码与证书路径使用环境变量或密钥管理注入（`${VALKEY_PASSWORD}` 等），不落明文配置。
+- 按网络条件设置 `connect-timeout`；按命令特征设置 `command-timeout`。
+- 设置 `client-name`，便于服务端定位连接来源。
+- 引入 Actuator 并确认健康端点覆盖全部 valkey 数据源。
+- 集群模式确认 `topology-refresh-period` 与 `max-redirects` 符合网络与运维预期。
+- 保留集群监视日志（`com.example` 的 `[ClusterMonitor]` 与 Lettuce 集群日志）。
+
+---
+
+## 8. 测试指南
+
+### 8.1 测试清单
 
 | 测试类 | 类型 | 覆盖内容 | 缺服务时 |
 | --- | --- | --- | --- |
 | `JacksonValkeySerializerTest` | 单元 | JSON 序列化往返（ASCII/中文/emoji/控制字符）、非法输入、null | 始终运行 |
 | `ValkeyCommandExecutorTest` | 单元 | 重试策略、异常转换、响应式语义、`[ClusterMonitor]` 日志 | 始终运行 |
 | `DefaultValkeyConnectionManagerTest` | 单元 | 同名复用、模式分派、未知名称、失败不缓存、关闭 | 始终运行 |
-| `ValkeyPropertiesTest` | 单元 | `application.yaml` 结构绑定与默认值 | 始终运行 |
-| `ValkeyStandaloneIntegrationTest` | 集成 | 单机模式端到端（含响应式） | 跳过 |
-| `ValkeyClusterIntegrationTest` | 集成 | 集群端到端、跨槽位路由、6 节点拓扑发现 | 跳过 |
-| `ValkeySpringBootIntegrationTest` | 集成 | Spring 装配、配置绑定、两种模式数据源操作 | 跳过 |
+| `ValkeyPropertiesTest` | 单元 | 配置绑定（含 TLS/超时/客户端名）与默认值 | 始终运行 |
+| `ValkeyUrisTest` | 单元 | `RedisURI` 构建：认证、TLS 标记、客户端名、超时 | 始终运行 |
+| `ValkeyClientOptionsTest` | 单元 | 客户端选项：自动重连、超时分级、集群重定向/拓扑刷新、TLS 快速失败 | 始终运行 |
+| `ValkeyHealthIndicatorTest` | 单元 | 健康聚合：全 UP、部分 DOWN、连接创建失败 | 始终运行 |
+| `ValkeyStandaloneIntegrationTest` | 集成 | 单机模式端到端（含响应式与 PING） | 跳过 |
+| `ValkeyClusterIntegrationTest` | 集成 | 集群端到端、跨槽位路由、6 节点拓扑发现、PING | 跳过 |
+| `ValkeyTlsIntegrationTest` | 集成 | TLS 端到端读写、PING、未信任证书被拒绝 | 跳过 |
+| `ValkeySpringBootIntegrationTest` | 集成 | Spring 装配、配置绑定、健康检查、两种模式数据源操作 | 跳过 |
+| `ValkeyGracefulShutdownTest` | 集成 | 上下文销毁顺序：连接先关闭、共享资源后释放 | 跳过 |
 | `ValkeyConnectionFailureIntegrationTest` | 集成 | 连接失败转换、有限重试行为（无需服务端） | 始终运行 |
 | `ValkeyClusterFailoverDrillTest` | 演练 | 主节点故障后拓扑自愈（默认禁用） | 跳过 |
 | `ValkeyClusterRedirectionDrillTest` | 演练 | 自动重定向跟随、重定向超限监视（默认禁用） | 跳过 |
@@ -568,7 +698,7 @@ limit was reached; topology refresh will follow: MOVED 11733 127.0.0.1:7003
 .\mvnw.cmd test -pl lettuce-connection-management
 ```
 
-### 7.2 在 WSL 中搭建集群（Podman）
+### 8.2 在 WSL 中搭建集群（Podman）
 
 前提：WSL2 + rootless Podman，valkey 镜像 `docker.io/valkey/valkey:9.1.1`。
 
@@ -587,7 +717,24 @@ bash .../scripts/valkey-cluster.sh down
 - 认证口令 `change_me`，与 `application.yaml` 中的配置一致。
 - Windows 侧验证：`Test-NetConnection 127.0.0.1 -Port 7001` 应返回 `True`。
 
-### 7.3 运行演练
+### 8.3 在 WSL 中搭建 TLS 节点（Podman）
+
+```bash
+# 在 WSL 中执行：生成自签 CA 与服务器证书、启动 TLS 节点并导出 CA 到 target/tls/
+bash /mnt/d/Workspaces/lettuce-katas/lettuce-connection-management/scripts/valkey-tls.sh up
+bash .../scripts/valkey-tls.sh down
+```
+
+脚本行为：
+
+- 自签证书保存在 WSL 的 `~/.valkey-tls/`；CA 证书导出到 `target/tls/ca.crt` 供 Windows 侧
+  测试使用（`ValkeyTlsIntegrationTest` 依赖此路径，缺失即跳过）。
+- 容器 `valkey-tls` 以 host 网络监听 `127.0.0.1:6380`（仅 TLS 端口，明文端口关闭），
+  口令 `change_me`。
+- 注意：镜像 entrypoint 会把 `valkey-server` 降权到 `valkey` 用户运行，因此脚本对测试证书
+  执行了 `chmod 644`；仅适用于本地演练。
+
+### 8.4 运行演练
 
 演练默认禁用，通过环境变量开启（需要上述集群已创建）：
 
@@ -606,14 +753,16 @@ $env:VALKEY_REDIRECTION_DRILL = "true"
 
 ---
 
-## 8. 已知约束与限制
+## 9. 已知约束与限制
 
-- **命令集固定**：仅 `SET` / `GET` / `DEL`；扩展命令需在操作层补充并复用现有执行器。
+- **命令集固定**：仅 `SET` / `GET` / `DEL`（另含连接级 `PING` 用于健康检查）；扩展命令需在操作层
+  补充并复用现有执行器。
 - **键值固定为 String**：复杂对象需在外层完成编解码；序列化的 JSON 存储形态为带引号的字符串
   字面量，使用 `redis-cli` 直接读取会看到引号。
 - **同一 key 必须使用同一序列化器**：混用不同序列化写入的数据可能无法还原。
-- **重试仅针对连接类异常**：避免对可能已执行的非幂等命令造成重复副作用。
-- **演练环境依赖**：故障/重定向演练需要 WSL + Podman 与 `scripts/valkey-cluster.sh` 创建的
-  集群；常规单元/集成测试不依赖 Podman。
-- **密码配置**：示例配置中的明文口令 `change_me` 仅用于本地演练，生产环境应使用密钥管理或
-  环境变量注入。
+- **重试仅针对连接类异常**：避免对可能已执行的非幂等命令造成重复副作用；复杂重试策略见 7.2。
+- **TLS 信任配置**：仅支持“系统信任库”或“单 CA 证书文件（PEM）”两种方式；双向 TLS（客户端
+  证书）未提供配置项，可通过自定义工厂扩展。
+- **演练环境依赖**：故障/重定向/TLS 测试需要 WSL + Podman 与对应脚本创建的服务；常规单元/
+  集成测试不依赖 Podman，服务缺失时自动跳过。
+- **密码配置**：示例中的明文口令 `change_me` 仅用于本地演练，生产环境应使用环境变量或密钥管理注入。

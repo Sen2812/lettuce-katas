@@ -19,6 +19,7 @@ public class DefaultValkeyConnection implements ValkeyConnection {
   private final String dataSourceName;
   private final RedisClient client;
   private final StatefulRedisConnection<String, String> connection;
+  private final ValkeyCommandExecutor executor;
   private final ValkeyOperations operations;
 
   public DefaultValkeyConnection(String dataSourceName, RedisClient client,
@@ -27,6 +28,7 @@ public class DefaultValkeyConnection implements ValkeyConnection {
     this.dataSourceName = dataSourceName;
     this.client = client;
     this.connection = connection;
+    this.executor = executor;
     this.operations = new DefaultValkeyOperations(dataSourceName, () -> connection.sync(),
         () -> connection.reactive(), serializer, executor);
   }
@@ -39,6 +41,11 @@ public class DefaultValkeyConnection implements ValkeyConnection {
   @Override
   public boolean isOpen() {
     return connection.isOpen();
+  }
+
+  @Override
+  public void ping() {
+    executor.executeVoid(dataSourceName, () -> connection.sync().ping());
   }
 
   @Override

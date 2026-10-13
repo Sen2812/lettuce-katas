@@ -2,6 +2,7 @@ package com.example.valkey.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.valkey.ValkeyConnection;
 import com.example.valkey.ValkeyConnectionManager;
 import com.example.valkey.config.ValkeyDataSourceProperties;
 import com.example.valkey.config.ValkeyMode;
@@ -112,6 +113,15 @@ class ValkeyStandaloneIntegrationTest {
   void shouldReuseTheSameConnectionInstance() {
     assertThat(connectionManager.getConnection(DATA_SOURCE))
         .isSameAs(connectionManager.getConnection(DATA_SOURCE));
+  }
+
+  @Test
+  void pingShouldSucceedOnReusedConnection() {
+    ValkeyConnection connection = connectionManager.getConnection(DATA_SOURCE);
+
+    connection.ping();
+
+    assertThat(connection.isOpen()).isTrue();
   }
 
   @Test

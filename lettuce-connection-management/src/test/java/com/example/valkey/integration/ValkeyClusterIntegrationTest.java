@@ -90,6 +90,16 @@ class ValkeyClusterIntegrationTest {
   }
 
   @Test
+  void pingShouldSucceedOnClusterConnection() {
+    ValkeyClusterConnection connection =
+        (ValkeyClusterConnection) connectionManager.getConnection(DATA_SOURCE);
+
+    connection.ping();
+
+    assertThat(connection.isOpen()).isTrue();
+  }
+
+  @Test
   void shouldSetGetAndDeleteValue() {
     String key = uniqueKey("basic");
 
