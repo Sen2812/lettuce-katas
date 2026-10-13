@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{40} - %msg%n</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+
+  <!-- springProfile 是 Spring Boot 对 Logback 的扩展，只有 logback-spring.xml 能用 -->
+  <springProfile name="prod">
+    <logger name="com.example" level="INFO"/>
+  </springProfile>
+  <springProfile name="!prod">
+    <logger name="com.example" level="DEBUG"/>
+  </springProfile>
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+</configuration>

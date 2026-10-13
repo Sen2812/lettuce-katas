@@ -1,0 +1,15 @@
+valkey:
+    datasources:
+        datasource-01:
+            mode: standalone
+            host: xxx
+            port: xxx
+            password: xxx
+            timeout: 10
+        datasource-02:
+            mode: cluster
+            host: xxx
+            port: xxx
+            password: xxx
+            timeout: 10
+            max-redirects: 5
