@@ -28,7 +28,8 @@ import org.junit.jupiter.api.Test;
 /**
  * 单机模式集成测试：连接 WSL 中的 valkey（127.0.0.1:6379）。
  *
- * <p>服务不可达时自动跳过，保证在无服务环境下构建可继续。
+ * <p>
+ * 服务不可达时自动跳过，保证在无服务环境下构建可继续。
  */
 class ValkeyStandaloneIntegrationTest {
 
@@ -44,8 +45,7 @@ class ValkeyStandaloneIntegrationTest {
 
   @BeforeAll
   static void setUp() {
-    Assumptions.assumeTrue(
-        IntegrationTestSupport.reachable(HOST, PORT),
+    Assumptions.assumeTrue(IntegrationTestSupport.reachable(HOST, PORT),
         () -> "valkey standalone @ " + HOST + ":" + PORT + " is not reachable, test skipped");
 
     clientResources = DefaultClientResources.create();
@@ -62,9 +62,8 @@ class ValkeyStandaloneIntegrationTest {
     properties.setPort(PORT);
     properties.setPassword(PASSWORD);
 
-    connectionManager =
-        new DefaultValkeyConnectionManager(
-            Map.of(DATA_SOURCE, properties), connectionFactory, clusterConnectionFactory);
+    connectionManager = new DefaultValkeyConnectionManager(Map.of(DATA_SOURCE, properties),
+        connectionFactory, clusterConnectionFactory);
     ValkeyTemplateFactory templateFactory = new ValkeyTemplateFactory(connectionManager);
     template = templateFactory.getTemplate(DATA_SOURCE);
     reactiveTemplate = templateFactory.getReactiveTemplate(DATA_SOURCE);

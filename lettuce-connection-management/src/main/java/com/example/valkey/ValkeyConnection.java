@@ -5,7 +5,8 @@ import com.example.valkey.operation.ValkeyOperations;
 /**
  * 单个 valkey 数据源连接的门面接口。
  *
- * <p>由连接工厂创建、由连接管理器按名称复用；通过 {@link #getOperations()} 向外暴露该连接上的操作集合。
+ * <p>
+ * 由连接工厂创建、由连接管理器按名称复用；通过 {@link #getOperations()} 向外暴露该连接上的操作集合。
  */
 public interface ValkeyConnection extends AutoCloseable {
 

@@ -15,10 +15,8 @@ public class DefaultReactiveKeyOperations implements ReactiveKeyOperations {
   private final ValkeySerializer serializer;
   private final ValkeyCommandExecutor executor;
 
-  public DefaultReactiveKeyOperations(
-      String dataSourceName,
-      Supplier<RedisClusterReactiveCommands<String, String>> commands,
-      ValkeySerializer serializer,
+  public DefaultReactiveKeyOperations(String dataSourceName,
+      Supplier<RedisClusterReactiveCommands<String, String>> commands, ValkeySerializer serializer,
       ValkeyCommandExecutor executor) {
     this.dataSourceName = dataSourceName;
     this.commands = commands;
@@ -29,8 +27,7 @@ public class DefaultReactiveKeyOperations implements ReactiveKeyOperations {
   @Override
   public Mono<Boolean> delete(String key) {
     String serializedKey = serializer.serialize(key);
-    return executor
-        .executeReactive(dataSourceName, () -> commands.get().del(serializedKey))
+    return executor.executeReactive(dataSourceName, () -> commands.get().del(serializedKey))
         .map(deleted -> deleted != null && deleted > 0);
   }
 }

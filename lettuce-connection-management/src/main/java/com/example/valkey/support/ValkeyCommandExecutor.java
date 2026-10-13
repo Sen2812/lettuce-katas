@@ -13,9 +13,9 @@ import reactor.util.retry.RetryBackoffSpec;
 /**
  * 统一执行 valkey 命令的入口：负责有限次重试与异常转换。
  *
- * <p>只有“命令未发送到服务端”的连接类异常（{@link RedisConnectionException}）才会重试，尝试次数由
- * {@link ValkeyRetryOptions} 限定；命令已送达服务端后出现的异常（服务端错误、命令超时、集群重定向
- * 超过上限等）不重试。所有最终失败的异常都会转换并包装为 {@link ValkeyAccessException}，原始异常
+ * <p>
+ * 只有“命令未发送到服务端”的连接类异常（{@link RedisConnectionException}）才会重试，尝试次数由 {@link ValkeyRetryOptions}
+ * 限定；命令已送达服务端后出现的异常（服务端错误、命令超时、集群重定向 超过上限等）不重试。所有最终失败的异常都会转换并包装为 {@link ValkeyAccessException}，原始异常
  * 通过 cause 保留。
  */
 public class ValkeyCommandExecutor {
@@ -34,12 +34,10 @@ public class ValkeyCommandExecutor {
 
   /** 执行无返回值的命令动作。 */
   public void executeVoid(String dataSourceName, Runnable action) {
-    execute(
-        dataSourceName,
-        () -> {
-          action.run();
-          return null;
-        });
+    execute(dataSourceName, () -> {
+      action.run();
+      return null;
+    });
   }
 
   /**
@@ -57,10 +55,7 @@ public class ValkeyCommandExecutor {
         lastConnectionError = e;
         LOGGER.warn(
             "Command on data source [{}] failed before reaching the server (attempt {}/{}): {}",
-            dataSourceName,
-            attempt,
-            retryOptions.getMaxAttempts(),
-            e.getMessage());
+            dataSourceName, attempt, retryOptions.getMaxAttempts(), e.getMessage());
         if (attempt < retryOptions.getMaxAttempts()) {
           sleep();
         }
@@ -72,13 +67,8 @@ public class ValkeyCommandExecutor {
         throw translate(dataSourceName, e);
       }
     }
-    throw new ValkeyAccessException(
-        "Valkey access failed for data source ["
-            + dataSourceName
-            + "] after "
-            + retryOptions.getMaxAttempts()
-            + " attempts",
-        lastConnectionError);
+    throw new ValkeyAccessException("Valkey access failed for data source [" + dataSourceName
+        + "] after " + retryOptions.getMaxAttempts() + " attempts", lastConnectionError);
   }
 
   /**
@@ -90,15 +80,11 @@ public class ValkeyCommandExecutor {
     RetryBackoffSpec retrySpec =
         Retry.fixedDelay(retryOptions.getMaxAttempts() - 1L, retryOptions.getBackoff())
             .filter(ValkeyCommandExecutor::isConnectionFailure)
-            .doBeforeRetry(
-                signal ->
-                    LOGGER.warn(
-                        "Reactive command on data source [{}] failed before reaching the server"
-                            + " (retry {}/{}): {}",
-                        dataSourceName,
-                        signal.totalRetries() + 1,
-                        retryOptions.getMaxAttempts() - 1,
-                        signal.failure().getMessage()))
+            .doBeforeRetry(signal -> LOGGER.warn(
+                "Reactive command on data source [{}] failed before reaching the server"
+                    + " (retry {}/{}): {}",
+                dataSourceName, signal.totalRetries() + 1, retryOptions.getMaxAttempts() - 1,
+                signal.failure().getMessage()))
             // 重试耗尽时保留最后一次原始异常，与同步路径的 cause 语义一致
             .onRetryExhaustedThrow((spec, signal) -> signal.failure());
     return Mono.defer(action)
@@ -132,10 +118,7 @@ public class ValkeyCommandExecutor {
     }
     monitorRedirections(dataSourceName, error);
     return new ValkeyAccessException(
-        "Valkey access failed for data source ["
-            + dataSourceName
-            + "]: "
-            + error.getMessage(),
+        "Valkey access failed for data source [" + dataSourceName + "]: " + error.getMessage(),
         error);
   }
 
@@ -148,8 +131,7 @@ public class ValkeyCommandExecutor {
         LOGGER.warn(
             "[ClusterMonitor] Data source [{}] could not follow a cluster redirection, the"
                 + " redirection limit was reached; topology refresh will follow: {}",
-            dataSourceName,
-            message);
+            dataSourceName, message);
         return;
       }
       Throwable cause = current.getCause();
@@ -163,12 +145,12 @@ public class ValkeyCommandExecutor {
   /**
    * 判断异常消息是否表示重定向处理失败。
    *
-   * <p>Lettuce 成功跟随重定向时不会把 MOVED/ASK 暴露给调用方；只有达到 max-redirects 上限时才会
-   * 抛出携带原始 MOVED/ASK 响应内容的异常（部分版本使用固定文案 “Too many cluster redirections”）。
+   * <p>
+   * Lettuce 成功跟随重定向时不会把 MOVED/ASK 暴露给调用方；只有达到 max-redirects 上限时才会 抛出携带原始 MOVED/ASK
+   * 响应内容的异常（部分版本使用固定文案 “Too many cluster redirections”）。
    */
   private static boolean isRedirectionLimitFailure(String message) {
-    return message.contains(TOO_MANY_REDIRECTIONS)
-        || message.startsWith("MOVED ")
+    return message.contains(TOO_MANY_REDIRECTIONS) || message.startsWith("MOVED ")
         || message.startsWith("ASK ");
   }
 

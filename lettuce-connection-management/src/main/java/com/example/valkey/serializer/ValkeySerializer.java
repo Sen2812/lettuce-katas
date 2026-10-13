@@ -5,8 +5,9 @@ import com.example.valkey.ValkeyAccessException;
 /**
  * 键值序列化契约：把 String 键与值编码为服务端可见的 UTF-8 字符串表示，并支持反向还原。
  *
- * <p>框架固定使用 Jackson 实现（{@link JacksonValkeySerializer}），序列化与反序列化失败时抛出
- * {@link ValkeyAccessException} 并保留原始异常。同一 key 的读写必须使用同一实现，否则无法还原。
+ * <p>
+ * 框架固定使用 Jackson 实现（{@link JacksonValkeySerializer}），序列化与反序列化失败时抛出 {@link ValkeyAccessException}
+ * 并保留原始异常。同一 key 的读写必须使用同一实现，否则无法还原。
  */
 public interface ValkeySerializer {
 

@@ -32,14 +32,15 @@ import org.slf4j.LoggerFactory;
 /**
  * 重定向行为演练（默认禁用，设置环境变量 {@code VALKEY_REDIRECTION_DRILL=true} 后启用）。
  *
- * <p>演练 1：计划内主从切换（CLUSTER FAILOVER）后，持有旧拓扑的客户端仍能通过 Lettuce 自动跟随
- * MOVED 重定向完成读写 —— 证明重定向无需应用层实现。
+ * <p>
+ * 演练 1：计划内主从切换（CLUSTER FAILOVER）后，持有旧拓扑的客户端仍能通过 Lettuce 自动跟随 MOVED 重定向完成读写 —— 证明重定向无需应用层实现。
  *
- * <p>演练 2：max-redirects 为 0 的客户端在同样场景下立即触发重定向超限，框架输出
- * {@code [ClusterMonitor]} 监视日志并转换 {@link ValkeyAccessException} —— 证明超限监视有效。
+ * <p>
+ * 演练 2：max-redirects 为 0 的客户端在同样场景下立即触发重定向超限，框架输出 {@code [ClusterMonitor]} 监视日志并转换
+ * {@link ValkeyAccessException} —— 证明超限监视有效。
  *
- * <p>为避免周期性拓扑刷新干扰观察，演练客户端把 topology-refresh-period 设为 10 分钟，只保留
- * 重定向驱动的自适应刷新路径。
+ * <p>
+ * 为避免周期性拓扑刷新干扰观察，演练客户端把 topology-refresh-period 设为 10 分钟，只保留 重定向驱动的自适应刷新路径。
  */
 @EnabledIfEnvironmentVariable(named = "VALKEY_REDIRECTION_DRILL", matches = "true")
 class ValkeyClusterRedirectionDrillTest {
@@ -53,25 +54,24 @@ class ValkeyClusterRedirectionDrillTest {
 
   @BeforeAll
   static void checkEnvironment() {
-    Assumptions.assumeTrue(
-        IntegrationTestSupport.reachable(HOST, SEED_PORT),
-        () -> "valkey cluster seed @ " + HOST + ":" + SEED_PORT + " is not reachable, drill skipped");
+    Assumptions.assumeTrue(IntegrationTestSupport.reachable(HOST, SEED_PORT),
+        () -> "valkey cluster seed @ " + HOST + ":" + SEED_PORT
+            + " is not reachable, drill skipped");
   }
 
   @Test
   void shouldFollowRedirectionAutomaticallyAfterPlannedFailover() throws Exception {
     String key = IntegrationTestSupport.drillKey("auto");
     MasterReplica pair = findMasterAndReplicaFor(key);
-    LOGGER.info(
-        "[drill] planned failover of slot owner {} -> replica {}", pair.master(), pair.replica());
+    LOGGER.info("[drill] planned failover of slot owner {} -> replica {}", pair.master(),
+        pair.replica());
 
     try (DrillClient client = new DrillClient(5)) {
       client.template.opsForValue().set(key, "before-failover");
       assertThat(client.template.opsForValue().get(key)).isEqualTo("before-failover");
 
       IntegrationTestSupport.clusterFailover(pair.replica());
-      IntegrationTestSupport.awaitRole(
-          SEED_PORT, pair.replica(), true, ROLE_SWITCH_TIMEOUT);
+      IntegrationTestSupport.awaitRole(SEED_PORT, pair.replica(), true, ROLE_SWITCH_TIMEOUT);
 
       // 客户端仍持有切换前的拓扑，命令会先命中旧节点并收到 MOVED；
       // Lettuce 自动重定向到新主节点，因此读写无需任何应用层介入即可成功。
@@ -108,16 +108,13 @@ class ValkeyClusterRedirectionDrillTest {
       assertThatThrownBy(() -> limited.template.opsForValue().get(key))
           .isInstanceOf(ValkeyAccessException.class)
           .hasCauseInstanceOf(RedisException.class)
-          .satisfies(
-              error -> {
-                String message = error.getCause().getMessage();
-                assertThat(
-                        message.startsWith("MOVED ")
-                            || message.startsWith("ASK ")
-                            || message.contains("Too many cluster redirections"))
-                    .as("unexpected redirection failure message: %s", message)
-                    .isTrue();
-              });
+          .satisfies(error -> {
+            String message = error.getCause().getMessage();
+            assertThat(message.startsWith("MOVED ") || message.startsWith("ASK ")
+                || message.contains("Too many cluster redirections"))
+                .as("unexpected redirection failure message: %s", message)
+                .isTrue();
+          });
       LOGGER.info("[drill] redirection limit was reached and translated as expected");
     } finally {
       try (DrillClient cleanup = new DrillClient(5)) {
@@ -131,17 +128,15 @@ class ValkeyClusterRedirectionDrillTest {
   private static MasterReplica findMasterAndReplicaFor(String key) throws Exception {
     int slot = IntegrationTestSupport.clusterKeySlot(SEED_PORT, key);
     List<IntegrationTestSupport.ClusterNode> nodes = IntegrationTestSupport.clusterNodes(SEED_PORT);
-    IntegrationTestSupport.ClusterNode master =
-        nodes.stream()
-            .filter(IntegrationTestSupport.ClusterNode::master)
-            .filter(node -> node.covers(slot))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("no master covers slot " + slot));
-    IntegrationTestSupport.ClusterNode replica =
-        nodes.stream()
-            .filter(node -> !node.master() && master.nodeId().equals(node.masterId()))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("no replica for master " + master.port()));
+    IntegrationTestSupport.ClusterNode master = nodes.stream()
+        .filter(IntegrationTestSupport.ClusterNode::master)
+        .filter(node -> node.covers(slot))
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("no master covers slot " + slot));
+    IntegrationTestSupport.ClusterNode replica = nodes.stream()
+        .filter(node -> !node.master() && master.nodeId().equals(node.masterId()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("no replica for master " + master.port()));
     return new MasterReplica(master.port(), replica.port());
   }
 
@@ -172,9 +167,8 @@ class ValkeyClusterRedirectionDrillTest {
       properties.setMaxRedirects(maxRedirects);
       properties.setTopologyRefreshPeriod(Duration.ofMinutes(10));
 
-      manager =
-          new DefaultValkeyConnectionManager(
-              Map.of("drill", properties), connectionFactory, clusterConnectionFactory);
+      manager = new DefaultValkeyConnectionManager(Map.of("drill", properties), connectionFactory,
+          clusterConnectionFactory);
       template = new ValkeyTemplateFactory(manager).getTemplate("drill");
     }
 

@@ -11,8 +11,8 @@ public class DefaultValkeyStringTemplate implements ValkeyStringTemplate {
   private final ValkeyConnectionManager connectionManager;
   private final String dataSourceName;
 
-  public DefaultValkeyStringTemplate(
-      ValkeyConnectionManager connectionManager, String dataSourceName) {
+  public DefaultValkeyStringTemplate(ValkeyConnectionManager connectionManager,
+      String dataSourceName) {
     this.connectionManager = connectionManager;
     this.dataSourceName = dataSourceName;
   }

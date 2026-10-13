@@ -19,12 +19,10 @@ public class DefaultValkeyOperations implements ValkeyOperations {
   private final ReactiveValueOperations reactiveValueOperations;
   private final ReactiveKeyOperations reactiveKeyOperations;
 
-  public DefaultValkeyOperations(
-      String dataSourceName,
+  public DefaultValkeyOperations(String dataSourceName,
       Supplier<RedisClusterCommands<String, String>> syncCommands,
       Supplier<RedisClusterReactiveCommands<String, String>> reactiveCommands,
-      ValkeySerializer serializer,
-      ValkeyCommandExecutor executor) {
+      ValkeySerializer serializer, ValkeyCommandExecutor executor) {
     this.valueOperations =
         new DefaultValueOperations(dataSourceName, syncCommands, serializer, executor);
     this.keyOperations =

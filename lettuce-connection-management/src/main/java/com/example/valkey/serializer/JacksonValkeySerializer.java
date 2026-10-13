@@ -8,8 +8,9 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * 基于 Jackson 3 的字符串序列化器。
  *
- * <p>键与值统一交给 Jackson 序列化为 JSON 文本（UTF-8 字符串），再经 Lettuce 的 UTF-8 编解码器写入
- * 服务端；读取时由 Jackson 反向还原。字符串在存储中表现为带引号的 JSON 字符串字面量。
+ * <p>
+ * 键与值统一交给 Jackson 序列化为 JSON 文本（UTF-8 字符串），再经 Lettuce 的 UTF-8 编解码器写入 服务端；读取时由 Jackson
+ * 反向还原。字符串在存储中表现为带引号的 JSON 字符串字面量。
  */
 public class JacksonValkeySerializer implements ValkeySerializer {
 

@@ -71,11 +71,9 @@ class ValkeyPropertiesTest {
   }
 
   private static ValkeyProperties bind(Map<String, Object> source) {
-    Binder binder =
-        new Binder(
-            List.of(new MapConfigurationPropertySource(source)),
-            null,
-            ApplicationConversionService.getSharedInstance());
-    return binder.bind("valkey", Bindable.of(ValkeyProperties.class)).orElseGet(ValkeyProperties::new);
+    Binder binder = new Binder(List.of(new MapConfigurationPropertySource(source)), null,
+        ApplicationConversionService.getSharedInstance());
+    return binder.bind("valkey", Bindable.of(ValkeyProperties.class))
+        .orElseGet(ValkeyProperties::new);
   }
 }

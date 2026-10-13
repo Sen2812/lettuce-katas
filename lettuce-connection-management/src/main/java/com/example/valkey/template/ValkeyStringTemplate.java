@@ -6,7 +6,8 @@ import com.example.valkey.operation.ValueOperations;
 /**
  * 同步操作模板：面向单个数据源，通过连接管理器获取（复用的）连接并暴露操作集合。
  *
- * <p>{@code opsForValue()} 与 {@code opsForKey()} 的实现均取自连接的 {@code getOperations()}。
+ * <p>
+ * {@code opsForValue()} 与 {@code opsForKey()} 的实现均取自连接的 {@code getOperations()}。
  */
 public interface ValkeyStringTemplate {
 

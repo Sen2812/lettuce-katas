@@ -36,9 +36,8 @@ class DefaultValkeyConnectionManagerTest {
   void setUp() {
     dataSources.put("standalone-ds", dataSource(ValkeyMode.STANDALONE));
     dataSources.put("cluster-ds", dataSource(ValkeyMode.CLUSTER));
-    manager =
-        new DefaultValkeyConnectionManager(
-            dataSources, connectionFactory, clusterConnectionFactory);
+    manager = new DefaultValkeyConnectionManager(dataSources, connectionFactory,
+        clusterConnectionFactory);
   }
 
   private static ValkeyDataSourceProperties dataSource(ValkeyMode mode) {
@@ -106,7 +105,8 @@ class DefaultValkeyConnectionManagerTest {
 
   @Test
   void shouldExposeConfiguredDataSourceNames() {
-    assertThat(manager.getDataSourceNames()).containsExactlyInAnyOrder("standalone-ds", "cluster-ds");
+    assertThat(manager.getDataSourceNames()).containsExactlyInAnyOrder("standalone-ds",
+        "cluster-ds");
   }
 
   @Test

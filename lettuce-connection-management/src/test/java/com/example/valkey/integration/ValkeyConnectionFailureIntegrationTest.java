@@ -23,8 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * 连接失败场景集成测试：目标端口未监听时，连接创建应经过有限重试后转换为 {@link
- * ValkeyAccessException}，并保留原始连接异常。
+ * 连接失败场景集成测试：目标端口未监听时，连接创建应经过有限重试后转换为 {@link ValkeyAccessException}，并保留原始连接异常。
  */
 class ValkeyConnectionFailureIntegrationTest {
 
@@ -38,8 +37,7 @@ class ValkeyConnectionFailureIntegrationTest {
 
   @BeforeAll
   static void setUp() {
-    Assumptions.assumeFalse(
-        IntegrationTestSupport.reachable(HOST, UNUSED_PORT),
+    Assumptions.assumeFalse(IntegrationTestSupport.reachable(HOST, UNUSED_PORT),
         () -> "port " + UNUSED_PORT + " is unexpectedly reachable, test skipped");
 
     clientResources = DefaultClientResources.create();
@@ -65,7 +63,8 @@ class ValkeyConnectionFailureIntegrationTest {
 
   @Test
   void shouldTranslateConnectionCreationFailureAndKeepOriginalCause() {
-    assertThatThrownBy(() -> connectionFactory.createConnection("broken-ds", unreachableProperties()))
+    assertThatThrownBy(
+        () -> connectionFactory.createConnection("broken-ds", unreachableProperties()))
         .isInstanceOf(ValkeyAccessException.class)
         .hasMessageContaining("broken-ds")
         .hasCauseInstanceOf(RedisConnectionException.class);
@@ -76,19 +75,21 @@ class ValkeyConnectionFailureIntegrationTest {
     // 3 次尝试之间间隔 2 次固定退避，耗时下限约为 2 x 100ms
     Instant start = Instant.now();
 
-    assertThatThrownBy(() -> connectionFactory.createConnection("broken-ds", unreachableProperties()))
+    assertThatThrownBy(
+        () -> connectionFactory.createConnection("broken-ds", unreachableProperties()))
         .isInstanceOf(ValkeyAccessException.class)
         .hasMessageContaining("after 3 attempts");
 
-    assertThat(Duration.between(start, Instant.now())).isGreaterThanOrEqualTo(Duration.ofMillis(200));
+    assertThat(Duration.between(start, Instant.now()))
+        .isGreaterThanOrEqualTo(Duration.ofMillis(200));
   }
 
   @Test
   void clusterFactoryShouldAlsoTranslateConnectionFailure() {
     ValkeyCommandExecutor executor = new ValkeyCommandExecutor(RETRY_OPTIONS);
     DefaultValkeyClusterConnectionFactory clusterFactory =
-        new DefaultValkeyClusterConnectionFactory(
-            clientResources, JacksonValkeySerializer.create(), executor);
+        new DefaultValkeyClusterConnectionFactory(clientResources, JacksonValkeySerializer.create(),
+            executor);
 
     ValkeyDataSourceProperties properties = unreachableProperties();
     properties.setMode(com.example.valkey.config.ValkeyMode.CLUSTER);

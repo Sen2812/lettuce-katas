@@ -27,7 +27,8 @@ import org.junit.jupiter.api.Test;
 /**
  * 集群模式集成测试：连接 WSL 中的 3 主 3 从 valkey 集群（种子 127.0.0.1:7001）。
  *
- * <p>集群由 {@code scripts/valkey-cluster.sh up} 创建；不可达时自动跳过。
+ * <p>
+ * 集群由 {@code scripts/valkey-cluster.sh up} 创建；不可达时自动跳过。
  */
 class ValkeyClusterIntegrationTest {
 
@@ -42,9 +43,9 @@ class ValkeyClusterIntegrationTest {
 
   @BeforeAll
   static void setUp() {
-    Assumptions.assumeTrue(
-        IntegrationTestSupport.reachable(HOST, SEED_PORT),
-        () -> "valkey cluster seed @ " + HOST + ":" + SEED_PORT + " is not reachable, test skipped");
+    Assumptions.assumeTrue(IntegrationTestSupport.reachable(HOST, SEED_PORT),
+        () -> "valkey cluster seed @ " + HOST + ":" + SEED_PORT
+            + " is not reachable, test skipped");
 
     clientResources = DefaultClientResources.create();
     ValkeySerializer serializer = JacksonValkeySerializer.create();
@@ -60,9 +61,8 @@ class ValkeyClusterIntegrationTest {
     properties.setPort(SEED_PORT);
     properties.setPassword(PASSWORD);
 
-    connectionManager =
-        new DefaultValkeyConnectionManager(
-            Map.of(DATA_SOURCE, properties), connectionFactory, clusterConnectionFactory);
+    connectionManager = new DefaultValkeyConnectionManager(Map.of(DATA_SOURCE, properties),
+        connectionFactory, clusterConnectionFactory);
     template = new ValkeyTemplateFactory(connectionManager).getTemplate(DATA_SOURCE);
   }
 

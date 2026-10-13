@@ -11,8 +11,8 @@ import io.lettuce.core.api.StatefulRedisConnection;
 /**
  * 单机（或主从）模式的连接实现。
  *
- * <p>持有该数据源独占的 {@link RedisClient}；关闭连接时同时关闭客户端，共享的 {@code ClientResources}
- * 由框架统一管理。
+ * <p>
+ * 持有该数据源独占的 {@link RedisClient}；关闭连接时同时关闭客户端，共享的 {@code ClientResources} 由框架统一管理。
  */
 public class DefaultValkeyConnection implements ValkeyConnection {
 
@@ -21,22 +21,14 @@ public class DefaultValkeyConnection implements ValkeyConnection {
   private final StatefulRedisConnection<String, String> connection;
   private final ValkeyOperations operations;
 
-  public DefaultValkeyConnection(
-      String dataSourceName,
-      RedisClient client,
-      StatefulRedisConnection<String, String> connection,
-      ValkeySerializer serializer,
+  public DefaultValkeyConnection(String dataSourceName, RedisClient client,
+      StatefulRedisConnection<String, String> connection, ValkeySerializer serializer,
       ValkeyCommandExecutor executor) {
     this.dataSourceName = dataSourceName;
     this.client = client;
     this.connection = connection;
-    this.operations =
-        new DefaultValkeyOperations(
-            dataSourceName,
-            () -> connection.sync(),
-            () -> connection.reactive(),
-            serializer,
-            executor);
+    this.operations = new DefaultValkeyOperations(dataSourceName, () -> connection.sync(),
+        () -> connection.reactive(), serializer, executor);
   }
 
   @Override

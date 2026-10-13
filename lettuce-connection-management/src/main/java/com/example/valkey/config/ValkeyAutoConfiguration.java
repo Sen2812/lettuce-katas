@@ -21,8 +21,9 @@ import org.springframework.context.annotation.Configuration;
 /**
  * valkey 框架的 Spring 装配。
  *
- * <p>注册共享 {@link ClientResources}（进程内单例，供所有数据源的客户端复用）、Jackson 序列化器、
- * 重试执行器、两种连接工厂、连接管理器与模板工厂；所有 Bean 均允许应用侧以自定义实现覆盖。
+ * <p>
+ * 注册共享 {@link ClientResources}（进程内单例，供所有数据源的客户端复用）、Jackson 序列化器、 重试执行器、两种连接工厂、连接管理器与模板工厂；所有 Bean
+ * 均允许应用侧以自定义实现覆盖。
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(ValkeyProperties.class)
@@ -51,37 +52,34 @@ public class ValkeyAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public ValkeyConnectionFactory valkeyConnectionFactory(
-      ClientResources valkeyClientResources,
-      ValkeySerializer valkeySerializer,
-      ValkeyCommandExecutor valkeyCommandExecutor) {
-    return new DefaultValkeyConnectionFactory(
-        valkeyClientResources, valkeySerializer, valkeyCommandExecutor);
+  public ValkeyConnectionFactory valkeyConnectionFactory(ClientResources valkeyClientResources,
+      ValkeySerializer valkeySerializer, ValkeyCommandExecutor valkeyCommandExecutor) {
+    return new DefaultValkeyConnectionFactory(valkeyClientResources, valkeySerializer,
+        valkeyCommandExecutor);
   }
 
   @Bean
   @ConditionalOnMissingBean
   public ValkeyClusterConnectionFactory valkeyClusterConnectionFactory(
-      ClientResources valkeyClientResources,
-      ValkeySerializer valkeySerializer,
+      ClientResources valkeyClientResources, ValkeySerializer valkeySerializer,
       ValkeyCommandExecutor valkeyCommandExecutor) {
-    return new DefaultValkeyClusterConnectionFactory(
-        valkeyClientResources, valkeySerializer, valkeyCommandExecutor);
+    return new DefaultValkeyClusterConnectionFactory(valkeyClientResources, valkeySerializer,
+        valkeyCommandExecutor);
   }
 
   @Bean(destroyMethod = "close")
   @ConditionalOnMissingBean
-  public ValkeyConnectionManager valkeyConnectionManager(
-      ValkeyProperties properties,
+  public ValkeyConnectionManager valkeyConnectionManager(ValkeyProperties properties,
       ValkeyConnectionFactory valkeyConnectionFactory,
       ValkeyClusterConnectionFactory valkeyClusterConnectionFactory) {
-    return new DefaultValkeyConnectionManager(
-        properties.getDatasources(), valkeyConnectionFactory, valkeyClusterConnectionFactory);
+    return new DefaultValkeyConnectionManager(properties.getDatasources(), valkeyConnectionFactory,
+        valkeyClusterConnectionFactory);
   }
 
   @Bean
   @ConditionalOnMissingBean
-  public ValkeyTemplateFactory valkeyTemplateFactory(ValkeyConnectionManager valkeyConnectionManager) {
+  public ValkeyTemplateFactory valkeyTemplateFactory(
+      ValkeyConnectionManager valkeyConnectionManager) {
     return new ValkeyTemplateFactory(valkeyConnectionManager);
   }
 }

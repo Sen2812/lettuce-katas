@@ -26,13 +26,10 @@ class ValkeyCommandExecutorTest {
   void shouldReturnResultOnFirstSuccess() {
     AtomicInteger attempts = new AtomicInteger();
 
-    String result =
-        executor.execute(
-            "ds-1",
-            () -> {
-              attempts.incrementAndGet();
-              return "value";
-            });
+    String result = executor.execute("ds-1", () -> {
+      attempts.incrementAndGet();
+      return "value";
+    });
 
     assertThat(result).isEqualTo("value");
     assertThat(attempts.get()).isEqualTo(1);
@@ -42,15 +39,12 @@ class ValkeyCommandExecutorTest {
   void shouldRetryConnectionFailureUntilSuccess() {
     AtomicInteger attempts = new AtomicInteger();
 
-    String result =
-        executor.execute(
-            "ds-1",
-            () -> {
-              if (attempts.incrementAndGet() < 3) {
-                throw new RedisConnectionException("connection refused");
-              }
-              return "ok";
-            });
+    String result = executor.execute("ds-1", () -> {
+      if (attempts.incrementAndGet() < 3) {
+        throw new RedisConnectionException("connection refused");
+      }
+      return "ok";
+    });
 
     assertThat(result).isEqualTo("ok");
     assertThat(attempts.get()).isEqualTo(3);
@@ -61,15 +55,10 @@ class ValkeyCommandExecutorTest {
     AtomicInteger attempts = new AtomicInteger();
     RedisConnectionException failure = new RedisConnectionException("connection refused");
 
-    assertThatThrownBy(
-            () ->
-                executor.execute(
-                    "ds-1",
-                    () -> {
-                      attempts.incrementAndGet();
-                      throw failure;
-                    }))
-        .isInstanceOf(ValkeyAccessException.class)
+    assertThatThrownBy(() -> executor.execute("ds-1", () -> {
+      attempts.incrementAndGet();
+      throw failure;
+    })).isInstanceOf(ValkeyAccessException.class)
         .hasMessageContaining("after 3 attempts")
         .hasCause(failure);
 
@@ -81,16 +70,10 @@ class ValkeyCommandExecutorTest {
     AtomicInteger attempts = new AtomicInteger();
     RedisCommandExecutionException failure = new RedisCommandExecutionException("WRONGTYPE");
 
-    assertThatThrownBy(
-            () ->
-                executor.execute(
-                    "ds-1",
-                    () -> {
-                      attempts.incrementAndGet();
-                      throw failure;
-                    }))
-        .isInstanceOf(ValkeyAccessException.class)
-        .hasCause(failure);
+    assertThatThrownBy(() -> executor.execute("ds-1", () -> {
+      attempts.incrementAndGet();
+      throw failure;
+    })).isInstanceOf(ValkeyAccessException.class).hasCause(failure);
 
     assertThat(attempts.get()).isEqualTo(1);
   }
@@ -99,16 +82,10 @@ class ValkeyCommandExecutorTest {
   void shouldWrapUnexpectedExceptionsWithoutRetry() {
     AtomicInteger attempts = new AtomicInteger();
 
-    assertThatThrownBy(
-            () ->
-                executor.execute(
-                    "ds-1",
-                    () -> {
-                      attempts.incrementAndGet();
-                      throw new IllegalStateException("connection is closed");
-                    }))
-        .isInstanceOf(ValkeyAccessException.class)
-        .hasCauseInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> executor.execute("ds-1", () -> {
+      attempts.incrementAndGet();
+      throw new IllegalStateException("connection is closed");
+    })).isInstanceOf(ValkeyAccessException.class).hasCauseInstanceOf(IllegalStateException.class);
 
     assertThat(attempts.get()).isEqualTo(1);
   }
@@ -122,24 +99,14 @@ class ValkeyCommandExecutorTest {
     try {
       RedisException moved = new RedisException("MOVED 15908 127.0.0.1:7006");
 
-      assertThatThrownBy(
-              () ->
-                  executor.execute(
-                      "ds-1",
-                      () -> {
-                        throw moved;
-                      }))
-          .isInstanceOf(ValkeyAccessException.class)
-          .hasCause(moved);
+      assertThatThrownBy(() -> executor.execute("ds-1", () -> {
+        throw moved;
+      })).isInstanceOf(ValkeyAccessException.class).hasCause(moved);
 
-      assertThat(appender.list)
-          .anySatisfy(
-              event -> {
-                assertThat(event.getLevel()).isEqualTo(Level.WARN);
-                assertThat(event.getFormattedMessage())
-                    .contains("[ClusterMonitor]")
-                    .contains("ds-1");
-              });
+      assertThat(appender.list).anySatisfy(event -> {
+        assertThat(event.getLevel()).isEqualTo(Level.WARN);
+        assertThat(event.getFormattedMessage()).contains("[ClusterMonitor]").contains("ds-1");
+      });
     } finally {
       logger.detachAppender(appender);
     }
@@ -149,19 +116,12 @@ class ValkeyCommandExecutorTest {
   void reactiveShouldRetryConnectionFailureUntilSuccess() {
     AtomicInteger attempts = new AtomicInteger();
 
-    String result =
-        executor
-            .executeReactive(
-                "ds-1",
-                () ->
-                    Mono.fromCallable(
-                        () -> {
-                          if (attempts.incrementAndGet() < 2) {
-                            throw new RedisConnectionException("connection refused");
-                          }
-                          return "ok";
-                        }))
-            .block();
+    String result = executor.executeReactive("ds-1", () -> Mono.fromCallable(() -> {
+      if (attempts.incrementAndGet() < 2) {
+        throw new RedisConnectionException("connection refused");
+      }
+      return "ok";
+    })).block();
 
     assertThat(result).isEqualTo("ok");
     assertThat(attempts.get()).isEqualTo(2);
@@ -171,19 +131,10 @@ class ValkeyCommandExecutorTest {
   void reactiveShouldExhaustRetriesAndTranslate() {
     AtomicInteger attempts = new AtomicInteger();
 
-    assertThatThrownBy(
-            () ->
-                executor
-                    .executeReactive(
-                        "ds-1",
-                        () ->
-                            Mono.fromCallable(
-                                () -> {
-                                  attempts.incrementAndGet();
-                                  throw new RedisConnectionException("connection refused");
-                                }))
-                    .block())
-        .isInstanceOf(ValkeyAccessException.class)
+    assertThatThrownBy(() -> executor.executeReactive("ds-1", () -> Mono.fromCallable(() -> {
+      attempts.incrementAndGet();
+      throw new RedisConnectionException("connection refused");
+    })).block()).isInstanceOf(ValkeyAccessException.class)
         .hasCauseInstanceOf(RedisConnectionException.class);
 
     assertThat(attempts.get()).isEqualTo(3);
@@ -193,19 +144,10 @@ class ValkeyCommandExecutorTest {
   void reactiveShouldNotRetryServerSideErrors() {
     AtomicInteger attempts = new AtomicInteger();
 
-    assertThatThrownBy(
-            () ->
-                executor
-                    .executeReactive(
-                        "ds-1",
-                        () ->
-                            Mono.fromCallable(
-                                () -> {
-                                  attempts.incrementAndGet();
-                                  throw new RedisCommandExecutionException("WRONGTYPE");
-                                }))
-                    .block())
-        .isInstanceOf(ValkeyAccessException.class)
+    assertThatThrownBy(() -> executor.executeReactive("ds-1", () -> Mono.fromCallable(() -> {
+      attempts.incrementAndGet();
+      throw new RedisCommandExecutionException("WRONGTYPE");
+    })).block()).isInstanceOf(ValkeyAccessException.class)
         .hasCauseInstanceOf(RedisCommandExecutionException.class);
 
     assertThat(attempts.get()).isEqualTo(1);

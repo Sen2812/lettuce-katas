@@ -5,8 +5,8 @@ import java.util.Set;
 /**
  * 多数据源连接管理器：按数据源名称提供连接。
  *
- * <p>同一数据源名称在其生命周期内始终返回同一个连接实例（懒创建并复用）；连接创建失败不会污染缓存，
- * 下次调用会重新尝试创建。
+ * <p>
+ * 同一数据源名称在其生命周期内始终返回同一个连接实例（懒创建并复用）；连接创建失败不会污染缓存， 下次调用会重新尝试创建。
  */
 public interface ValkeyConnectionManager extends AutoCloseable {
 

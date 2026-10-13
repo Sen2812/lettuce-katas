@@ -15,10 +15,8 @@ public class DefaultReactiveValueOperations implements ReactiveValueOperations {
   private final ValkeySerializer serializer;
   private final ValkeyCommandExecutor executor;
 
-  public DefaultReactiveValueOperations(
-      String dataSourceName,
-      Supplier<RedisClusterReactiveCommands<String, String>> commands,
-      ValkeySerializer serializer,
+  public DefaultReactiveValueOperations(String dataSourceName,
+      Supplier<RedisClusterReactiveCommands<String, String>> commands, ValkeySerializer serializer,
       ValkeyCommandExecutor executor) {
     this.dataSourceName = dataSourceName;
     this.commands = commands;
@@ -31,16 +29,14 @@ public class DefaultReactiveValueOperations implements ReactiveValueOperations {
     String serializedKey = serializer.serialize(key);
     String serializedValue = serializer.serialize(value);
     return executor
-        .executeReactive(
-            dataSourceName, () -> commands.get().set(serializedKey, serializedValue))
+        .executeReactive(dataSourceName, () -> commands.get().set(serializedKey, serializedValue))
         .then();
   }
 
   @Override
   public Mono<String> get(String key) {
     String serializedKey = serializer.serialize(key);
-    return executor
-        .executeReactive(dataSourceName, () -> commands.get().get(serializedKey))
+    return executor.executeReactive(dataSourceName, () -> commands.get().get(serializedKey))
         .map(serializer::deserialize);
   }
 }

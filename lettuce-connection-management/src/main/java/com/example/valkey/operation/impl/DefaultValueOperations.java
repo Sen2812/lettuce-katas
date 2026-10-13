@@ -14,10 +14,8 @@ public class DefaultValueOperations implements ValueOperations {
   private final ValkeySerializer serializer;
   private final ValkeyCommandExecutor executor;
 
-  public DefaultValueOperations(
-      String dataSourceName,
-      Supplier<RedisClusterCommands<String, String>> commands,
-      ValkeySerializer serializer,
+  public DefaultValueOperations(String dataSourceName,
+      Supplier<RedisClusterCommands<String, String>> commands, ValkeySerializer serializer,
       ValkeyCommandExecutor executor) {
     this.dataSourceName = dataSourceName;
     this.commands = commands;

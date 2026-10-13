@@ -34,8 +34,8 @@ final class IntegrationTestSupport {
     String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     int exitCode = process.waitFor();
     if (exitCode != 0) {
-      throw new IllegalStateException(
-          "podman " + String.join(" ", args) + " failed with exit code " + exitCode + ":\n" + output);
+      throw new IllegalStateException("podman " + String.join(" ", args) + " failed with exit code "
+          + exitCode + ":\n" + output);
     }
     return output;
   }
@@ -55,10 +55,8 @@ final class IntegrationTestSupport {
 
   /** 通过指定种子端口的节点读取并解析 CLUSTER NODES。 */
   static List<ClusterNode> clusterNodes(int seedPort) throws IOException, InterruptedException {
-    String output =
-        podman(
-            "exec", "valkey-node-" + seedPort, "valkey-cli", "-p", String.valueOf(seedPort),
-            "-a", CLUSTER_PASSWORD, "--no-auth-warning", "cluster", "nodes");
+    String output = podman("exec", "valkey-node-" + seedPort, "valkey-cli", "-p",
+        String.valueOf(seedPort), "-a", CLUSTER_PASSWORD, "--no-auth-warning", "cluster", "nodes");
     List<ClusterNode> nodes = new ArrayList<>();
     for (String line : output.split("\n")) {
       String trimmed = line.trim();
@@ -82,11 +80,8 @@ final class IntegrationTestSupport {
             int slot = Integer.parseInt(parts[i]);
             ranges.add(new int[] {slot, slot});
           } else {
-            ranges.add(
-                new int[] {
-                  Integer.parseInt(parts[i].substring(0, dash)),
-                  Integer.parseInt(parts[i].substring(dash + 1))
-                });
+            ranges.add(new int[] {Integer.parseInt(parts[i].substring(0, dash)),
+                Integer.parseInt(parts[i].substring(dash + 1))});
           }
         } catch (NumberFormatException e) {
           // 迁移标记等非槽位字段，忽略
@@ -100,17 +95,15 @@ final class IntegrationTestSupport {
   /** 查询 key 所属的集群槽位。 */
   static int clusterKeySlot(int seedPort, String key) throws IOException, InterruptedException {
     String output =
-        podman(
-            "exec", "valkey-node-" + seedPort, "valkey-cli", "-p", String.valueOf(seedPort),
+        podman("exec", "valkey-node-" + seedPort, "valkey-cli", "-p", String.valueOf(seedPort),
             "-a", CLUSTER_PASSWORD, "--no-auth-warning", "cluster", "keyslot", key);
     return Integer.parseInt(output.trim());
   }
 
   /** 在指定端口的节点上执行 CLUSTER FAILOVER（副本提升为主节点）。 */
   static void clusterFailover(int nodePort) throws IOException, InterruptedException {
-    podman(
-        "exec", "valkey-node-" + nodePort, "valkey-cli", "-p", String.valueOf(nodePort),
-        "-a", CLUSTER_PASSWORD, "--no-auth-warning", "cluster", "failover");
+    podman("exec", "valkey-node-" + nodePort, "valkey-cli", "-p", String.valueOf(nodePort), "-a",
+        CLUSTER_PASSWORD, "--no-auth-warning", "cluster", "failover");
   }
 
   /** 轮询等待指定端口的节点角色变为 master / slave。 */
@@ -125,13 +118,8 @@ final class IntegrationTestSupport {
       }
       Thread.sleep(250);
     }
-    throw new IllegalStateException(
-        "node on port "
-            + targetPort
-            + " did not become "
-            + (expectMaster ? "master" : "slave")
-            + " within "
-            + timeout);
+    throw new IllegalStateException("node on port " + targetPort + " did not become "
+        + (expectMaster ? "master" : "slave") + " within " + timeout);
   }
 
   /** 构造一个带随机 hash tag 的测试 key，保证 Jackson 序列化前后槽位一致。 */

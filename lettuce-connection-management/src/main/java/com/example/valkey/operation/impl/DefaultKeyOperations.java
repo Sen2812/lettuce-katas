@@ -14,10 +14,8 @@ public class DefaultKeyOperations implements KeyOperations {
   private final ValkeySerializer serializer;
   private final ValkeyCommandExecutor executor;
 
-  public DefaultKeyOperations(
-      String dataSourceName,
-      Supplier<RedisClusterCommands<String, String>> commands,
-      ValkeySerializer serializer,
+  public DefaultKeyOperations(String dataSourceName,
+      Supplier<RedisClusterCommands<String, String>> commands, ValkeySerializer serializer,
       ValkeyCommandExecutor executor) {
     this.dataSourceName = dataSourceName;
     this.commands = commands;

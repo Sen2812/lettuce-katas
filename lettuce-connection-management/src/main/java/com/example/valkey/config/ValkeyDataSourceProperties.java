@@ -95,18 +95,8 @@ public class ValkeyDataSourceProperties {
 
   @Override
   public String toString() {
-    return "ValkeyDataSourceProperties{mode="
-        + mode
-        + ", host='"
-        + host
-        + "', port="
-        + port
-        + ", timeout="
-        + timeout
-        + ", maxRedirects="
-        + maxRedirects
-        + ", topologyRefreshPeriod="
-        + topologyRefreshPeriod
-        + "}";
+    return "ValkeyDataSourceProperties{mode=" + mode + ", host='" + host + "', port=" + port
+        + ", timeout=" + timeout + ", maxRedirects=" + maxRedirects + ", topologyRefreshPeriod="
+        + topologyRefreshPeriod + "}";
   }
 }

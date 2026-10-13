@@ -33,15 +33,17 @@ import org.slf4j.LoggerFactory;
 /**
  * 集群节点故障演练（默认禁用，设置环境变量 {@code VALKEY_FAILOVER_DRILL=true} 后启用）。
  *
- * <p>演练内容：停止当前持有 slot 0 的主节点（通过 Podman），验证 Lettuce 在副本提升后自动完成
- * 拓扑刷新与重连，客户端复用同一连接即可恢复读写，无需应用层重建任何连接。
+ * <p>
+ * 演练内容：停止当前持有 slot 0 的主节点（通过 Podman），验证 Lettuce 在副本提升后自动完成 拓扑刷新与重连，客户端复用同一连接即可恢复读写，无需应用层重建任何连接。
  *
- * <p>演练需要 WSL + Podman 环境以及 {@code scripts/valkey-cluster.sh up} 创建的集群。
+ * <p>
+ * 演练需要 WSL + Podman 环境以及 {@code scripts/valkey-cluster.sh up} 创建的集群。
  */
 @EnabledIfEnvironmentVariable(named = "VALKEY_FAILOVER_DRILL", matches = "true")
 class ValkeyClusterFailoverDrillTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ValkeyClusterFailoverDrillTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ValkeyClusterFailoverDrillTest.class);
 
   private static final String DATA_SOURCE = "cluster-drill";
   private static final String HOST = "127.0.0.1";
@@ -54,9 +56,9 @@ class ValkeyClusterFailoverDrillTest {
 
   @BeforeAll
   static void setUp() {
-    Assumptions.assumeTrue(
-        IntegrationTestSupport.reachable(HOST, SEED_PORT),
-        () -> "valkey cluster seed @ " + HOST + ":" + SEED_PORT + " is not reachable, drill skipped");
+    Assumptions.assumeTrue(IntegrationTestSupport.reachable(HOST, SEED_PORT),
+        () -> "valkey cluster seed @ " + HOST + ":" + SEED_PORT
+            + " is not reachable, drill skipped");
 
     clientResources = DefaultClientResources.create();
     ValkeySerializer serializer = JacksonValkeySerializer.create();
@@ -73,9 +75,8 @@ class ValkeyClusterFailoverDrillTest {
     properties.setPort(SEED_PORT);
     properties.setPassword(IntegrationTestSupport.CLUSTER_PASSWORD);
 
-    connectionManager =
-        new DefaultValkeyConnectionManager(
-            Map.of(DATA_SOURCE, properties), connectionFactory, clusterConnectionFactory);
+    connectionManager = new DefaultValkeyConnectionManager(Map.of(DATA_SOURCE, properties),
+        connectionFactory, clusterConnectionFactory);
     template = new ValkeyTemplateFactory(connectionManager).getTemplate(DATA_SOURCE);
   }
 
@@ -124,8 +125,7 @@ class ValkeyClusterFailoverDrillTest {
           .isZero();
       LOGGER.info(
           "[drill] cluster recovered in {} s after stopping {} (topology refreshed by Lettuce)",
-          String.format("%.1f", elapsedSeconds),
-          master);
+          String.format("%.1f", elapsedSeconds), master);
 
       for (int i = 0; i < keyCount; i++) {
         assertThat(template.opsForValue().get(prefix + i)).isEqualTo("value-" + i);

@@ -10,9 +10,8 @@ final class ValkeyUris {
   private ValkeyUris() {}
 
   static RedisURI build(ValkeyDataSourceProperties properties) {
-    RedisURI.Builder builder =
-        RedisURI.Builder.redis(properties.getHost(), properties.getPort())
-            .withTimeout(properties.getTimeout());
+    RedisURI.Builder builder = RedisURI.Builder.redis(properties.getHost(), properties.getPort())
+        .withTimeout(properties.getTimeout());
     if (StringUtils.hasText(properties.getPassword())) {
       if (StringUtils.hasText(properties.getUsername())) {
         builder.withAuthentication(properties.getUsername(), properties.getPassword());

@@ -11,16 +11,15 @@ public class DefaultReactiveValkeyStringTemplate implements ReactiveValkeyString
   private final ValkeyConnectionManager connectionManager;
   private final String dataSourceName;
 
-  public DefaultReactiveValkeyStringTemplate(
-      ValkeyConnectionManager connectionManager, String dataSourceName) {
+  public DefaultReactiveValkeyStringTemplate(ValkeyConnectionManager connectionManager,
+      String dataSourceName) {
     this.connectionManager = connectionManager;
     this.dataSourceName = dataSourceName;
   }
 
   @Override
   public ReactiveValueOperations opsForValue() {
-    return connectionManager
-        .getConnection(dataSourceName)
+    return connectionManager.getConnection(dataSourceName)
         .getOperations()
         .reactiveValueOperations();
   }

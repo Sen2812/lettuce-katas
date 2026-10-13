@@ -5,7 +5,8 @@ import com.example.valkey.config.ValkeyDataSourceProperties;
 /**
  * 数据源连接工厂：根据数据源配置创建并初始化连接。
  *
- * <p>创建过程中出现的异常（含连接失败重试耗尽）统一转换为 {@link ValkeyAccessException}。
+ * <p>
+ * 创建过程中出现的异常（含连接失败重试耗尽）统一转换为 {@link ValkeyAccessException}。
  */
 public interface ValkeyConnectionFactory {
 
