@@ -1,0 +1,1016 @@
+/* Modern CSS styling inspired by carloschac.in and vanilla-di.com */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Catppuccin Latte (Light Theme) - Default */
+:root {
+    /* Catppuccin Latte color palette */
+    --ctp-rosewater: #dc8a78;
+    --ctp-flamingo: #dd7878;
+    --ctp-pink: #ea76cb;
+    --ctp-mauve: #8839ef;
+    --ctp-red: #d20f39;
+    --ctp-maroon: #e64553;
+    --ctp-peach: #fe640b;
+    --ctp-yellow: #df8e1d;
+    --ctp-green: #40a02b;
+    --ctp-teal: #179299;
+    --ctp-sky: #04a5e5;
+    --ctp-sapphire: #209fb5;
+    --ctp-blue: #1e66f5;
+    --ctp-lavender: #7287fd;
+    --ctp-text: #4c4f69;
+    --ctp-subtext1: #5c5f77;
+    --ctp-subtext0: #6c6f85;
+    --ctp-overlay2: #7c7f93;
+    --ctp-overlay1: #8c8fa1;
+    --ctp-overlay0: #9ca0b0;
+    --ctp-surface2: #acb0be;
+    --ctp-surface1: #bcc0cc;
+    --ctp-surface0: #ccd0da;
+    --ctp-base: #eff1f5;
+    --ctp-mantle: #e6e9ef;
+    --ctp-crust: #dce0e8;
+
+    /* Semantic mappings for light theme (Latte) */
+    --primary-color: var(--ctp-blue);
+    --secondary-color: var(--ctp-surface2);
+    --accent-color: var(--ctp-peach);
+    --text-dark: var(--ctp-text);
+    --text-light: var(--ctp-subtext1);
+    --bg-light: var(--ctp-base);
+    --bg-white: var(--ctp-mantle);
+    --border-color: var(--ctp-surface0);
+    --shadow: 0 4px 6px -1px rgba(76, 79, 105, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(76, 79, 105, 0.1);
+
+    /* Transitions for smooth theme switching */
+    --transition-theme: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Light theme uses :root as default - no need for explicit [data-theme="light"] */
+
+/* Catppuccin Macchiato (Dark Theme) */
+[data-theme="dark"] {
+    /* Catppuccin Macchiato color palette */
+    --ctp-rosewater: #f4dbd6;
+    --ctp-flamingo: #f0c6c6;
+    --ctp-pink: #f5bde6;
+    --ctp-mauve: #c6a0f6;
+    --ctp-red: #ed8796;
+    --ctp-maroon: #ee99a0;
+    --ctp-peach: #f5a97f;
+    --ctp-yellow: #eed49f;
+    --ctp-green: #a6da95;
+    --ctp-teal: #8bd5ca;
+    --ctp-sky: #91d7e3;
+    --ctp-sapphire: #7dc4e4;
+    --ctp-blue: #8aadf4;
+    --ctp-lavender: #b7bdf8;
+    --ctp-text: #cad3f5;
+    --ctp-subtext1: #b8c0e0;
+    --ctp-subtext0: #a5adcb;
+    --ctp-overlay2: #939ab7;
+    --ctp-overlay1: #8087a2;
+    --ctp-overlay0: #6e738d;
+    --ctp-surface2: #5b6078;
+    --ctp-surface1: #494d64;
+    --ctp-surface0: #363a4f;
+    --ctp-base: #24273a;
+    --ctp-mantle: #1e2030;
+    --ctp-crust: #181926;
+
+    /* Semantic mappings for dark theme (Macchiato) */
+    --primary-color: var(--ctp-blue);
+    --secondary-color: var(--ctp-surface2);
+    --accent-color: var(--ctp-peach);
+    --text-dark: var(--ctp-text);
+    --text-light: var(--ctp-subtext1);
+    --bg-light: var(--ctp-base);
+    --bg-white: var(--ctp-mantle);
+    --border-color: var(--ctp-surface0);
+    --shadow: 0 4px 6px -1px rgba(24, 25, 38, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(24, 25, 38, 0.4);
+}
+
+/* Auto theme detection - respects system preference */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        /* Use Macchiato colors when system prefers dark and no explicit theme set */
+        --ctp-rosewater: #f4dbd6;
+        --ctp-flamingo: #f0c6c6;
+        --ctp-pink: #f5bde6;
+        --ctp-mauve: #c6a0f6;
+        --ctp-red: #ed8796;
+        --ctp-maroon: #ee99a0;
+        --ctp-peach: #f5a97f;
+        --ctp-yellow: #eed49f;
+        --ctp-green: #a6da95;
+        --ctp-teal: #8bd5ca;
+        --ctp-sky: #91d7e3;
+        --ctp-sapphire: #7dc4e4;
+        --ctp-blue: #8aadf4;
+        --ctp-lavender: #b7bdf8;
+        --ctp-text: #cad3f5;
+        --ctp-subtext1: #b8c0e0;
+        --ctp-subtext0: #a5adcb;
+        --ctp-overlay2: #939ab7;
+        --ctp-overlay1: #8087a2;
+        --ctp-overlay0: #6e738d;
+        --ctp-surface2: #5b6078;
+        --ctp-surface1: #494d64;
+        --ctp-surface0: #363a4f;
+        --ctp-base: #24273a;
+        --ctp-mantle: #1e2030;
+        --ctp-crust: #181926;
+
+        --primary-color: var(--ctp-blue);
+        --secondary-color: var(--ctp-surface2);
+        --accent-color: var(--ctp-peach);
+        --text-dark: var(--ctp-text);
+        --text-light: var(--ctp-subtext1);
+        --bg-light: var(--ctp-base);
+        --bg-white: var(--ctp-mantle);
+        --border-color: var(--ctp-surface0);
+        --shadow: 0 4px 6px -1px rgba(24, 25, 38, 0.4);
+        --shadow-lg: 0 10px 15px -3px rgba(24, 25, 38, 0.4);
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-dark);
+    background-color: var(--bg-light);
+    transition: var(--transition-theme);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+p {
+    margin-bottom: 1rem;
+    color: var(--text-light);
+}
+
+/* Navigation */
+nav {
+    background: var(--bg-white);
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: var(--transition-theme);
+}
+
+.nav-container {
+    max-width: 1400px;  /* Match container width */
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--primary-color);
+}
+
+/* Theme Switcher Button */
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: var(--transition-theme), transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    color: var(--text-dark);
+    background-color: var(--bg-white);
+    margin-left: 1rem;
+    font-size: 1.125rem;
+    line-height: 1;
+}
+
+.theme-toggle:hover {
+    background-color: var(--bg-light);
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.theme-toggle:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Screen reader only text */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Container */
+.container {
+    max-width: 1400px;  /* Increased from 1200px for better code display */
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--ctp-sapphire) 100%);
+    color: white;
+    padding: 6rem 0;
+    text-align: center;
+    transition: var(--transition-theme);
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    color: white;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0.95;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-primary {
+    background: var(--bg-white);
+    color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background: var(--bg-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+    background: var(--ctp-surface1);
+    color: var(--ctp-text);
+    border-color: var(--ctp-surface2);
+}
+
+.btn-secondary:hover {
+    background: var(--ctp-surface2);
+    border-color: var(--ctp-overlay0);
+}
+
+/* Sections */
+.section {
+    padding: 4rem 0;
+}
+
+.section-white {
+    background: var(--bg-white);
+}
+
+.section-light {
+    background: var(--bg-light);
+}
+
+/* Feature Cards */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));  /* Wider minimum for code */
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.feature-card {
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.feature-card h3 {
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+
+.feature-card p {
+    color: var(--text-light);
+    margin-bottom: 0;
+}
+
+/* Code Blocks */
+.code-block,
+pre,
+code {
+    background: var(--ctp-crust);
+    color: var(--ctp-text);
+    border-radius: 8px;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Menlo', 'Consolas', monospace;
+    position: relative;
+}
+
+pre {
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    white-space: pre;
+    word-wrap: normal;
+    /* Better scrolling on smaller screens */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Inline code */
+code {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.875em;
+    background: var(--ctp-mantle);
+    color: var(--ctp-text);
+    border-radius: 4px;
+}
+
+/* Code inside pre tags */
+pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+    border-radius: 0;
+}
+
+.code-block {
+    padding: 1.5rem;
+    font-size: 0.85rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    line-height: 1.5;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--ctp-surface2);
+    border: none;
+    color: var(--ctp-text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.3s ease;
+}
+
+.copy-btn:hover {
+    background: var(--ctp-overlay0);
+}
+
+/* Removed .highlight class - redundant with .code-block */
+
+/* Prism.js Custom Theme - Catppuccin Integration */
+/* Override default Prism CSS with Catppuccin colors */
+
+/* Base code styling */
+code[class*="language-"],
+pre[class*="language-"] {
+    color: var(--ctp-text);
+    background: none;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Menlo', 'Consolas', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+    tab-size: 4;
+    hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+    padding: 0; /* Remove default padding, let .code-block handle it */
+    margin: 0;
+    overflow: auto;
+    border-radius: 0; /* Let .code-block handle border-radius */
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+    padding: 0.1em 0.3em;
+    border-radius: 0.3em;
+    white-space: normal;
+    background: var(--ctp-mantle);
+}
+
+/* Token colors using Catppuccin palette */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: var(--ctp-overlay2);
+    font-style: italic;
+}
+
+.token.punctuation {
+    color: var(--ctp-overlay1);
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+    color: var(--ctp-red);
+}
+
+.token.boolean,
+.token.number {
+    color: var(--ctp-peach);
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: var(--ctp-green);
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+    color: var(--ctp-sky);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+    color: var(--ctp-blue);
+}
+
+.token.keyword {
+    color: var(--ctp-mauve);
+    font-weight: 500;
+}
+
+.token.regex,
+.token.important {
+    color: var(--ctp-yellow);
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold;
+}
+
+.token.italic {
+    font-style: italic;
+}
+
+.token.entity {
+    cursor: help;
+}
+
+/* Language-specific highlighting */
+.token.namespace {
+    opacity: 0.7;
+}
+
+/* YAML specific */
+.language-yaml .token.atrule {
+    color: var(--ctp-blue);
+}
+
+.language-yaml .token.important {
+    color: var(--ctp-mauve);
+}
+
+/* Bash/Shell specific */
+.language-bash .token.function,
+.language-sh .token.function {
+    color: var(--ctp-blue);
+}
+
+.language-bash .token.parameter,
+.language-sh .token.parameter {
+    color: var(--ctp-text);
+}
+
+/* XML/HTML specific */
+.language-xml .token.tag .token.tag {
+    color: var(--ctp-blue);
+}
+
+.language-xml .token.tag .token.punctuation {
+    color: var(--ctp-overlay1);
+}
+
+.language-xml .token.attr-name {
+    color: var(--ctp-yellow);
+}
+
+.language-xml .token.attr-value {
+    color: var(--ctp-green);
+}
+
+/* Java specific */
+.language-java .token.annotation {
+    color: var(--ctp-yellow);
+}
+
+.language-java .token.generic {
+    color: var(--ctp-sky);
+}
+
+/* Properties files */
+.language-properties .token.key {
+    color: var(--ctp-blue);
+}
+
+.language-properties .token.value {
+    color: var(--ctp-green);
+}
+
+/* Removed .highlight fallback styles - using Prism.js tokens exclusively */
+
+/* Wide layout for pages with lots of code */
+.wide-layout .container {
+    max-width: 1600px;  /* Even wider for code-heavy pages */
+}
+
+/* Animation class used by JavaScript IntersectionObserver */
+.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Default state for animatable elements */
+.feature-card,
+.content-card {
+    opacity: 0.8;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.wide-layout .content-grid {
+    grid-template-columns: 1fr;  /* Single column for better code display */
+}
+
+/* Better handling of long command lines */
+pre code,
+.code-block {
+    word-break: break-all;      /* Allow breaking long lines */
+    white-space: pre-wrap;      /* Preserve formatting but allow wrapping */
+}
+
+/* But preserve exact formatting for specific code types */
+pre[class*="language-bash"] code,
+pre[class*="language-shell"] code,
+.code-block.bash,
+.code-block.shell {
+    word-break: normal;         /* Don't break command lines */
+    white-space: pre;           /* Preserve exact spacing */
+    overflow-x: auto;           /* Allow horizontal scrolling instead */
+}
+
+/* Improve readability with better line spacing */
+.highlight pre code,
+pre code {
+    display: block;
+    line-height: 1.6;           /* More readable line spacing */
+}
+
+/* Steps */
+.steps {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  /* Force exactly 2 columns */
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.step {
+    text-align: center;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin: 0 auto 1rem;
+}
+
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));  /* Wider minimum for code */
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+/* Two Column Grid - for better readability of complex content */
+.two-column-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  /* Force exactly 2 columns */
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* Two Column Features Grid - for feature cards in 2 columns */
+.features-grid-2col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  /* Force exactly 2 columns */
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.content-card {
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.content-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Info boxes with theme-aware colors */
+.info-box {
+    background: var(--ctp-surface0);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--ctp-blue);
+    margin-top: 2rem;
+}
+
+.info-box h4 {
+    color: var(--text-dark);
+    margin-bottom: 0.75rem;
+}
+
+.info-box p {
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.info-box p:last-child {
+    margin-bottom: 0;
+}
+
+/* Info box variants */
+.info-box-blue {
+    background: var(--ctp-surface0);
+    border-left-color: var(--ctp-blue);
+}
+
+.info-box-green {
+    background: var(--ctp-surface0);
+    border-left-color: var(--ctp-green);
+}
+
+/* Lists */
+ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    background: var(--accent-color);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.badge-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.badge-success {
+    background: var(--ctp-green);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--ctp-maroon);  /* Using maroon for better contrast */
+    color: white;
+}
+
+.badge-info {
+    background: var(--ctp-blue);
+    color: white;
+}
+
+/* Dark theme adjustments for better contrast */
+[data-theme="dark"] .badge-primary,
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .badge-primary {
+        background: var(--ctp-sapphire);  /* Lighter blue for dark theme */
+        color: var(--ctp-crust);  /* Dark text for better contrast */
+    }
+
+    :root:not([data-theme="light"]) .badge-success {
+        background: var(--ctp-teal);  /* Use teal instead of green */
+        color: var(--ctp-crust);  /* Dark text for better contrast */
+    }
+
+    :root:not([data-theme="light"]) .badge-info {
+        background: var(--ctp-sky);  /* Lighter blue */
+        color: var(--ctp-crust);  /* Dark text for better contrast */
+    }
+}
+
+[data-theme="dark"] .badge-primary {
+    background: var(--ctp-sapphire);
+    color: var(--ctp-crust);
+}
+
+[data-theme="dark"] .badge-success {
+    background: var(--ctp-teal);
+    color: var(--ctp-crust);
+}
+
+[data-theme="dark"] .badge-info {
+    background: var(--ctp-sky);
+    color: var(--ctp-crust);
+}
+
+/* Footer */
+footer {
+    background: var(--ctp-crust);
+    color: var(--ctp-text);
+    padding: 3rem 0;
+    text-align: center;
+}
+
+footer p {
+    color: var(--ctp-subtext1);
+    margin-bottom: 0;
+}
+
+footer a {
+    color: var(--ctp-sky);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Focus and keyboard navigation */
+a:focus,
+button:focus,
+.btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Skip to main content link for screen readers */
+.skip-to-main {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--primary-color);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 1000;
+}
+
+.skip-to-main:focus {
+    top: 6px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 1rem;
+    }
+
+    .container {
+        padding: 0 1rem;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+    }
+
+    .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));  /* Adjust for mobile */
+    }
+
+    .content-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));  /* Adjust for mobile */
+    }
+
+    .two-column-grid,
+    .features-grid-2col {
+        grid-template-columns: 1fr;  /* Single column on mobile */
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-links {
+        gap: 1rem;
+    }
+
+    /* Steps: single column on tablet */
+    .steps {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+    }
+
+    /* Better code block handling on mobile */
+    pre, .code-block {
+        font-size: 0.8rem;
+        padding: 1rem;
+        margin: 1rem 0;
+        /* Allow horizontal scrolling on mobile for long lines */
+        overflow-x: auto;
+        white-space: pre;
+    }
+
+    /* Adjust copy button on mobile */
+    .copy-btn {
+        font-size: 0.7rem;
+        padding: 6px 10px;
+        top: 8px;
+        right: 8px;
+    }
+
+    /* Theme toggle on mobile */
+    .theme-toggle {
+        min-width: 2.25rem;
+        height: 2.25rem;
+        margin-left: 0.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        padding: 4rem 0;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .section {
+        padding: 3rem 0;
+    }
+
+    /* Extra small screens - single column everything */
+    .features-grid,
+    .content-grid,
+    .two-column-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 0 0.5rem;  /* Less padding on very small screens */
+    }
+
+    /* Smaller code blocks on tiny screens */
+    pre, .code-block {
+        font-size: 0.75rem;
+        padding: 0.8rem;
+        border-radius: 6px;
+    }
+}
+
+/* Large screens - constrain steps width for better readability */
+@media (min-width: 1400px) {
+    .steps {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

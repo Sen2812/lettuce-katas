@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - Java 25 Maven Template</title>
+    <meta name="description" content="Comprehensive features of the Java 25 Maven template including testing, code quality, and modern development tools.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body class="wide-layout">
+    <a href="#main" class="skip-to-main">Skip to main content</a>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">Java 25 Template</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html" class="active">Features</a></li>
+                <li><a href="getting-started.html">Get Started</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="https://github.com/cchacin/java-maven-template" target="_blank">GitHub</a></li>
+                <li>
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Switch theme (currently Auto)" title="Switch between light and dark themes">
+                        <span id="theme-icon">💻</span>
+                        <span class="sr-only">Current theme: Auto</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main id="main">
+    <section class="hero">
+        <div class="container">
+            <h1>Template Features</h1>
+            <p>Everything you need for modern Java 25 development with best practices built-in</p>
+        </div>
+    </section>
+
+    <section class="section section-white">
+        <div class="container">
+            <div class="badge badge-primary">Core Feature</div>
+            <h2>Java 25 Ready</h2>
+            <p>This template is built specifically for Java 25, taking advantage of the latest language features and improvements.</p>
+
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Compiler Configuration</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-xml">&lt;maven.compiler.release&gt;25&lt;/maven.compiler.release&gt;</code></pre>
+                    </div>
+                    <p>Uses the latest Java 25 compiler release setting for optimal compatibility and feature access.</p>
+                </div>
+                <div class="content-card">
+                    <h3>CI/CD Integration</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-yaml">- name: "Setup JDK"
+  uses: actions/setup-java@v5
+  with:
+    distribution: "oracle"
+    java-version: 25</code></pre>
+                    </div>
+                    <p>GitHub Actions workflow configured with Oracle JDK 25 for consistent builds and deployments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <div class="badge badge-warning">🔬 Preview Features</div>
+            <h2>Java Preview Features Enabled</h2>
+            <p>Experience cutting-edge Java features before they become standard. Preview features are enabled across compilation and test execution for early adoption and experimentation.</p>
+
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Compiler Configuration</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-xml">&lt;plugin&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;version&gt;3.14.1&lt;/version&gt;
+    &lt;configuration&gt;
+        &lt;compilerArgs&gt;
+            &lt;arg&gt;--enable-preview&lt;/arg&gt;
+        &lt;/compilerArgs&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+                    </div>
+                    <p>Enables preview features during compilation for access to experimental Java language enhancements.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Test Execution Support</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-xml">&lt;!-- Surefire (unit tests) --&gt;
+&lt;plugin&gt;
+    &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;argLine&gt;--enable-preview&lt;/argLine&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+
+&lt;!-- Failsafe (integration tests) --&gt;
+&lt;plugin&gt;
+    &lt;artifactId&gt;maven-failsafe-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;argLine&gt;--enable-preview&lt;/argLine&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+                    </div>
+                    <p>Both unit and integration tests can leverage preview features with consistent configuration across all test runners.</p>
+                </div>
+            </div>
+
+            <div class="info-box info-box-blue">
+                <h4>ℹ️ What are Preview Features?</h4>
+                <p>Preview features are fully implemented Java language or JVM features that are not yet permanent. They allow developers to provide feedback before features become standard in future releases. Preview features are production-quality but may undergo changes based on community feedback.</p>
+                <p><strong>Examples:</strong> Pattern matching enhancements, structured concurrency, virtual threads improvements, and other experimental APIs.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <h2>Testing Excellence</h2>
+            <p>Comprehensive testing setup with separation of concerns and modern testing libraries.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧪</div>
+                    <h3>Separated Test Execution</h3>
+                    <p><strong>Surefire Plugin</strong> for unit tests (*Test.java) and <strong>Failsafe Plugin</strong> for integration tests (*IT.java) with different execution phases.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Parallel Test Execution</h3>
+                    <p>JUnit Platform configured for parallel test execution with dynamic strategy for faster feedback loops.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Property-Based Testing</h3>
+                    <p><strong>jqwik 1.9.3</strong> for property-based testing to discover edge cases automatically with generated test data.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📐</div>
+                    <h3>Architecture Testing</h3>
+                    <p><strong>ArchUnit 1.4.1</strong> for testing architectural rules and ensuring code structure compliance.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏗️</div>
+                    <h3>Fluent Assertions</h3>
+                    <p><strong>AssertJ 3.27.6</strong> for readable and maintainable test assertions with fluent API.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎲</div>
+                    <h3>Test Data Generation</h3>
+                    <p><strong>Instancio 5.5.1</strong> for generating test data objects automatically with customizable constraints.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 3rem;">Parallel Test Configuration</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code class="language-properties">junit.jupiter.execution.parallel.enabled = true
+junit.jupiter.execution.parallel.config.strategy = dynamic
+junit.jupiter.execution.parallel.mode.default = concurrent
+junit.jupiter.execution.parallel.mode.classes.default = concurrent</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-white">
+        <div class="container">
+            <h2>Code Quality & Formatting</h2>
+            <p>Automated code quality enforcement with industry-standard formatting and best practices.</p>
+
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Spotless Code Formatting</h3>
+                    <p>Google Java Format with AOSP style automatically applied during compilation phase.</p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-bash">./mvnw spotless:apply  # Format code
+./mvnw spotless:check  # Verify formatting</code></pre>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <h3>Automated Quality Gates</h3>
+                    <p>Spotless formatting checks run automatically during the compile phase to ensure consistent code style.</p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-xml">&lt;execution&gt;
+    &lt;goals&gt;&lt;goal&gt;check&lt;/goal&gt;&lt;/goals&gt;
+    &lt;phase&gt;compile&lt;/phase&gt;
+&lt;/execution&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <h2>Maven Configuration & Best Practices</h2>
+            <p>Optimized Maven configuration with wrapper for consistent builds across environments.</p>
+
+            <div class="features-grid-2col">
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Maven Wrapper</h3>
+                    <p>No need to install Maven locally. The wrapper ensures consistent Maven version across all environments.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>JVM Configuration</h3>
+                    <p>Optimized JVM settings in .mvn/jvm.config for better performance and headless operation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Maven Optimizations</h3>
+                    <p>Batch mode, fail-at-end, and no transfer progress for cleaner CI/CD output.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Maven Extensions</h3>
+                    <p>OpenTelemetry tracing and build cache extensions for enhanced observability and performance.</p>
+                </div>
+            </div>
+
+            <h3>Configuration Files</h3>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>.mvn/jvm.config</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-properties">-Xmx2048m -Xms512m -Djava.awt.headless=true</code></pre>
+                    </div>
+                    <p>Optimized heap settings and headless mode for CI environments.</p>
+                </div>
+                <div class="content-card">
+                    <h3>.mvn/maven.config</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-properties">-B
+--fail-at-end
+--no-transfer-progress</code></pre>
+                    </div>
+                    <p>Batch mode and optimization flags for better CI/CD experience.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-white">
+        <div class="container">
+            <div class="badge badge-primary">🚀 Performance & Observability</div>
+            <h2>Build Performance & Observability</h2>
+            <p>Enhanced build pipeline with distributed tracing and intelligent caching for faster builds and better insights into build performance.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>OpenTelemetry Maven Extension</h3>
+                    <p><strong>Version 1.50.0-alpha</strong> - Distributed tracing for Maven builds with deep observability into build performance, plugin execution, and bottleneck identification.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Maven Build Cache Extension</h3>
+                    <p><strong>Version 1.2.0</strong> - Intelligent build caching that reuses previous build results to dramatically reduce build times for unchanged modules.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 3rem;">Extensions Configuration</h3>
+            <p>Extensions are configured in <code>.mvn/extensions.xml</code> and automatically activated for all Maven builds.</p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code class="language-xml">&lt;extensions&gt;
+    &lt;extension&gt;
+        &lt;groupId&gt;org.apache.maven.extensions&lt;/groupId&gt;
+        &lt;artifactId&gt;maven-build-cache-extension&lt;/artifactId&gt;
+        &lt;version&gt;1.2.0&lt;/version&gt;
+    &lt;/extension&gt;
+    &lt;extension&gt;
+        &lt;groupId&gt;io.opentelemetry.contrib&lt;/groupId&gt;
+        &lt;artifactId&gt;opentelemetry-maven-extension&lt;/artifactId&gt;
+        &lt;version&gt;1.50.0-alpha&lt;/version&gt;
+    &lt;/extension&gt;
+&lt;/extensions&gt;</code></pre>
+            </div>
+
+            <div class="content-grid" style="margin-top: 2rem;">
+                <div class="content-card">
+                    <h3>🔍 Build Observability Benefits</h3>
+                    <ul>
+                        <li><strong>Trace Execution:</strong> Monitor build phases and plugin execution in real-time</li>
+                        <li><strong>Performance Insights:</strong> Identify slow plugins and optimization opportunities</li>
+                        <li><strong>Export Options:</strong> Send traces to Jaeger, Zipkin, or OTLP-compatible collectors</li>
+                        <li><strong>CI/CD Monitoring:</strong> Track build health and performance trends over time</li>
+                        <li><strong>Debugging:</strong> Detailed spans for troubleshooting build failures</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>⚡ Build Cache Benefits</h3>
+                    <ul>
+                        <li><strong>Incremental Builds:</strong> Only rebuild modules that have changed</li>
+                        <li><strong>Time Savings:</strong> Reduce build times by 40-70% in typical scenarios</li>
+                        <li><strong>Local Cache:</strong> Reuse outputs from previous local builds</li>
+                        <li><strong>Remote Cache:</strong> Share build cache across team members (configurable)</li>
+                        <li><strong>Smart Detection:</strong> Automatic cache invalidation when dependencies change</li>
+                        <li><strong>CI/CD Optimization:</strong> Dramatically faster pipeline execution</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box info-box-green">
+                <h4>💡 Getting Started with Extensions</h4>
+                <p><strong>Build Cache:</strong> Works automatically out of the box. Clean builds create cache entries, subsequent builds reuse them. Use <code>./mvnw clean verify</code> to populate the cache.</p>
+                <p><strong>OpenTelemetry:</strong> Requires environment configuration to export traces. Set <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> to your collector URL, or traces will be logged locally. Perfect for local development insights even without a collector.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <h2>Development Tools</h2>
+            <p>Modern development tools and integrations for enhanced productivity.</p>
+
+            <div class="features-grid-2col">
+                <div class="feature-card">
+                    <div class="feature-icon">🐚</div>
+                    <h3>JShell Integration</h3>
+                    <p>REPL development support with JShell Maven plugin for interactive Java development and experimentation.</p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-bash">./mvnw jshell:run</code></pre>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Modularization Ready</h3>
+                    <p>Java Platform Module System (JPMS) configured with module-info.java files for both main and test sources.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>jenv Configuration</h3>
+                    <p>Java version management with jenv for easy switching between different Java versions in development.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Fat JAR Support</h3>
+                    <p>Maven Shade plugin available via profile for creating executable JAR files with all dependencies.</p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code class="language-bash">./mvnw package -Pshade</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <h2>CI/CD & Automation</h2>
+            <p>GitHub Actions workflow ready for continuous integration and deployment.</p>
+
+            <div class="content-card">
+                <h3>GitHub Actions Workflow</h3>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-yaml">name: Maven Build
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: "Setup JDK"
+        uses: actions/setup-java@v5
+        with:
+          distribution: "oracle"
+          java-version: 25
+          cache: "maven"
+      - name: "Build with Maven"
+        run: ./mvnw verify</code></pre>
+                </div>
+                <p>Complete CI/CD pipeline with Oracle JDK 25, Maven caching, and full verification including tests and quality checks.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-white">
+        <div class="container" style="text-align: center;">
+            <h2>Ready to Use All These Features?</h2>
+            <p>Start your Java 25 project with all these best practices and tools pre-configured.</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/cchacin/java-maven-template/generate" class="btn btn-primary" target="_blank">Use This Template</a>
+                <a href="getting-started.html" class="btn btn-secondary">Get Started Guide</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-white">
+        <div class="container" style="text-align: center;">
+            <h2>Support This Project</h2>
+            <p>If you find this template useful, consider supporting its development!</p>
+            <div style="margin-top: 2rem;">
+                <a href="https://www.buymeacoffee.com/cchacin" target="_blank">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px; width: 217px;">
+                </a>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Created by <a href="https://carloschac.in" target="_blank">Carlos Chacin</a> • <a href="https://github.com/cchacin/java-maven-template" target="_blank">View on GitHub</a></p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
