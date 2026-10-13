@@ -11,9 +11,13 @@
   <!-- springProfile 是 Spring Boot 对 Logback 的扩展，只有 logback-spring.xml 能用 -->
   <springProfile name="prod">
     <logger name="com.example" level="INFO"/>
+    <logger name="io.lettuce.core.cluster" level="INFO"/>
   </springProfile>
   <springProfile name="!prod">
     <logger name="com.example" level="DEBUG"/>
+    <!-- 集群拓扑刷新与重定向事件的日志监视 -->
+    <logger name="io.lettuce.core.cluster" level="DEBUG"/>
+    <logger name="io.lettuce.core.protocol.ConnectionWatchdog" level="DEBUG"/>
   </springProfile>
 
   <root level="INFO">

@@ -1,15 +1,22 @@
 valkey:
+    # 命令重试策略：仅对连接类异常（命令未送达服务端）生效
+    retry:
+        max-attempts: 3
+        backoff: 200ms
     datasources:
+        # 单机模式数据源（resource）
         datasource-01:
             mode: standalone
-            host: xxx
-            port: xxx
-            password: xxx
-            timeout: 10
+            host: localhost
+            port: 6379
+            password: change_me
+            timeout: 10s
+        # 集群模式数据源；host/port 为拓扑发现的种子节点，其余节点由 Lettuce 自动发现
         datasource-02:
             mode: cluster
-            host: xxx
-            port: xxx
-            password: xxx
-            timeout: 10
+            host: localhost
+            port: 7001
+            password: change_me
+            timeout: 10s
             max-redirects: 5
+            topology-refresh-period: 30s

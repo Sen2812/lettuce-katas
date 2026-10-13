@@ -11,6 +11,9 @@
   <!-- 只保留业务代码的日志，压低 Lettuce 等第三方库的启动噪音 -->
   <logger name="io.lettuce" level="WARN"/>
   <logger name="com.example" level="DEBUG"/>
+  <!-- 集群拓扑刷新与重定向事件的日志监视 -->
+  <logger name="io.lettuce.core.cluster" level="DEBUG"/>
+  <logger name="io.lettuce.core.protocol.ConnectionWatchdog" level="DEBUG"/>
 
   <root level="INFO">
     <appender-ref ref="CONSOLE"/>
