@@ -17,27 +17,26 @@ import org.springframework.core.env.MapPropertySource;
  */
 class ValkeyGracefulShutdownTest {
 
-  @Test
-  void shouldCloseConnectionsCleanlyOnContextShutdown() {
-    Assumptions.assumeTrue(IntegrationTestSupport.reachable("127.0.0.1", 6379),
-        "standalone valkey is not reachable, test skipped");
+    @Test
+    void shouldCloseConnectionsCleanlyOnContextShutdown() {
+        Assumptions.assumeTrue(IntegrationTestSupport.reachable("127.0.0.1", 6379),
+                "standalone valkey is not reachable, test skipped");
 
-    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-    context.getEnvironment()
-        .getPropertySources()
-        .addFirst(new MapPropertySource("valkey-shutdown-test",
-            Map.of("valkey.datasources.ds.host", "127.0.0.1", "valkey.datasources.ds.port", "6379",
-                "valkey.datasources.ds.password", "change_me")));
-    context.register(ValkeyAutoConfiguration.class);
-    context.refresh();
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+        context.getEnvironment()
+                .getPropertySources()
+                .addFirst(new MapPropertySource("valkey-shutdown-test",
+                        Map.of("valkey.datasources.ds.host", "127.0.0.1", "valkey.datasources.ds.port", "6379",
+                                "valkey.datasources.ds.password", "change_me")));
+        context.register(ValkeyAutoConfiguration.class);
+        context.refresh();
 
-    ValkeyConnection connection =
-        context.getBean(ValkeyConnectionManager.class).getConnection("ds");
-    connection.ping();
-    assertThat(connection.isOpen()).isTrue();
+        ValkeyConnection connection = context.getBean(ValkeyConnectionManager.class).getConnection("ds");
+        connection.ping();
+        assertThat(connection.isOpen()).isTrue();
 
-    context.close();
+        context.close();
 
-    assertThat(connection.isOpen()).isFalse();
-  }
+        assertThat(connection.isOpen()).isFalse();
+    }
 }
